@@ -13,7 +13,7 @@ let
 
   cfg = config.services.esphome;
 
-  stateDir = "/var/lib/esphome";
+  stateDir = cfg.stateDir;
 
   esphomeParams =
     if cfg.enableUnixSocket
@@ -44,6 +44,12 @@ in
       type = types.port;
       default = 6052;
       description = mdDoc "esphome port";
+    };
+
+    stateDir = mkOption {
+      type = types.stateDir;
+      default = "/var/lib/esphome";
+      description = mdDoc "esphome stateDir";
     };
 
     openFirewall = mkOption {
