@@ -47,7 +47,7 @@ in
     };
 
     stateDir = mkOption {
-      type = types.stateDir;
+      type = types.str;
       default = "/var/lib/esphome";
       description = mdDoc "esphome stateDir";
     };
