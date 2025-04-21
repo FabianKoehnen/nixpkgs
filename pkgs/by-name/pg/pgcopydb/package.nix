@@ -1,15 +1,16 @@
-{ lib
-, stdenv
-, fetchFromGitHub
-, libkrb5
-, openssl
-, pam
-, pkg-config
-, postgresql
-, readline
-, sqlite
-, testers
-, zlib
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  libkrb5,
+  openssl,
+  pam,
+  pkg-config,
+  postgresql,
+  readline,
+  sqlite,
+  testers,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,18 +26,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [
     pkg-config
+    postgresql.pg_config
   ];
 
-  buildInputs = [
-    libkrb5
-    openssl
-    postgresql
-    readline
-    sqlite
-    zlib
-  ] ++ lib.optionals stdenv.isLinux [
-    pam
-  ];
+  buildInputs =
+    [
+      libkrb5
+      openssl
+      postgresql
+      readline
+      sqlite
+      zlib
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
+      pam
+    ];
 
   hardeningDisable = [ "format" ];
 
@@ -59,7 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/dimitri/pgcopydb";
     changelog = "https://github.com/dimitri/pgcopydb/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = licenses.postgresql;
-    maintainers = with maintainers; [ marsam ];
+    maintainers = [ ];
     mainProgram = "pgcopydb";
     platforms = platforms.all;
   };

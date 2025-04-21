@@ -1,7 +1,10 @@
-{ stdenv, lib, fetchFromGitHub
+{
+  stdenv,
+  lib,
+  fetchFromGitHub,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation {
   pname = "alan2";
   version = "2.8.7";
 
@@ -27,7 +30,7 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     homepage = "https://www.alanif.se/";
-    description = "The Alan interactive fiction language (legacy version)";
+    description = "Alan interactive fiction language (legacy version)";
     license = licenses.artistic2;
     platforms = platforms.linux;
     maintainers = with maintainers; [ neilmayhew ];

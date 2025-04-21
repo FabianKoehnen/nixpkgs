@@ -1,29 +1,35 @@
-{ lib
-, buildGoModule
-, fetchFromGitHub
-, installShellFiles
-, makeWrapper
-, dart-sass
-, git
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
+  installShellFiles,
+  makeWrapper,
+  dart-sass,
+  git,
 }:
 
 buildGoModule rec {
   pname = "shopware-cli";
-  version = "0.4.33";
+  version = "0.5.16";
   src = fetchFromGitHub {
     repo = "shopware-cli";
     owner = "FriendsOfShopware";
-    rev = version;
-    hash = "sha256-BwoCp92tE/fsYIgez/BcU4f23IU5lMQ6jQKOCZ/oTEk=";
+    tag = version;
+    hash = "sha256-E4+49YAHwojPX/QVjgtKHXCBiK65pmLidfNxe24SJYg=";
   };
 
-  nativeBuildInputs = [ installShellFiles makeWrapper ];
-  nativeCheckInputs = [ git dart-sass ];
+  nativeBuildInputs = [
+    installShellFiles
+    makeWrapper
+  ];
+  nativeCheckInputs = [
+    git
+    dart-sass
+  ];
 
-  vendorHash = "sha256-dhOw/38FRQCA90z0DdyIPLrYiQ/tutGsdCb108ZLliU=";
+  vendorHash = "sha256-l71imlrBSg6PBdzREZL+2GYyBKEw/uqPwG8aiTUFpwk=";
 
   postInstall = ''
-    export HOME="$(mktemp -d)"
     installShellCompletion --cmd shopware-cli \
       --bash <($out/bin/shopware-cli completion bash) \
       --zsh <($out/bin/shopware-cli completion zsh) \
@@ -41,12 +47,12 @@ buildGoModule rec {
     "-X 'github.com/FriendsOfShopware/shopware-cli/cmd.version=${version}'"
   ];
 
-  meta = with lib; {
+  meta = {
     description = "Command line tool for Shopware 6";
     mainProgram = "shopware-cli";
     homepage = "https://github.com/FriendsOfShopware/shopware-cli";
     changelog = "https://github.com/FriendsOfShopware/shopware-cli/releases/tag/${version}";
-    license = licenses.mit;
-    maintainers = with maintainers; [ shyim ];
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ shyim ];
   };
 }

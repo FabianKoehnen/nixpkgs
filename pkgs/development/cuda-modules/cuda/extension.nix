@@ -15,7 +15,11 @@ let
     "12.0" = "12.0.1";
     "12.1" = "12.1.1";
     "12.2" = "12.2.2";
-    "12.3" = "12.3.0";
+    "12.3" = "12.3.2";
+    "12.4" = "12.4.1";
+    "12.5" = "12.5.1";
+    "12.6" = "12.6.3";
+    "12.8" = "12.8.1";
   };
 
   # Check if the current CUDA version is supported.
@@ -53,6 +57,10 @@ let
       redistribRelease = redistribManifest.${pname};
       featureRelease = featureManifest.${pname};
       drv =
+        let
+          # get `autoAddDriverRunpath` from pkgs instead of cudaPackages' alias to avoid warning
+          inherit (callPackage ({ pkgs }: pkgs) { }) autoAddDriverRunpath;
+        in
         (callPackage ../generic-builders/manifest.nix {
           # We pass the whole release to the builder because it has logic to handle
           # the case we're trying to build on an unsupported platform.
@@ -61,6 +69,7 @@ let
             redistName
             redistribRelease
             featureRelease
+            autoAddDriverRunpath
             ;
         }).overrideAttrs
           (prevAttrs: {

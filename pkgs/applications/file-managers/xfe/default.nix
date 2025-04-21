@@ -1,29 +1,33 @@
-{ lib
-, stdenv
-, fetchurl
-, fox
-, fontconfig
-, freetype
-, pkg-config
-, gettext
-, xcbutil
-, gcc
-, intltool
-, file
-, libpng
-, xorg
+{
+  lib,
+  stdenv,
+  fetchurl,
+  fox,
+  fontconfig,
+  freetype,
+  pkg-config,
+  gettext,
+  xcbutil,
+  gcc,
+  intltool,
+  file,
+  libpng,
+  xorg,
 }:
 
 stdenv.mkDerivation rec {
   pname = "xfe";
-  version = "1.46.1";
+  version = "2.0.1";
 
   src = fetchurl {
     url = "mirror://sourceforge/xfe/xfe-${version}.tar.xz";
-    sha256 = "sha256-NTpowZCl4OTWrK2txh7f7t9WxGRdfM0M3KIyHq3nJUg=";
+    sha256 = "sha256-vlu0yshT72rWQB0aqCleIsdJSZ4kEL8MUsYET1VqJbM=";
   };
 
-  nativeBuildInputs = [ pkg-config intltool ];
+  nativeBuildInputs = [
+    pkg-config
+    intltool
+  ];
   buildInputs = [
     fox
     gettext
@@ -52,7 +56,7 @@ stdenv.mkDerivation rec {
     '';
     homepage = "https://sourceforge.net/projects/xfe/";
     license = licenses.gpl2;
-    maintainers = with maintainers; [ ];
+    maintainers = [ ];
     platforms = platforms.linux;
   };
 }

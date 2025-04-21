@@ -1,19 +1,22 @@
-{ lib
-, buildPythonPackage
-, cryptography
-, fetchFromGitHub
-, gssapi
-, hatchling
-, ldap3
-, pyasn1
-, pytestCheckHook
-, pythonOlder
-, winacl
+{
+  lib,
+  asn1crypto,
+  buildPythonPackage,
+  cryptography,
+  dnspython,
+  fetchFromGitHub,
+  hatchling,
+  minikerberos,
+  msldap,
+  pyasn1,
+  pytestCheckHook,
+  pythonOlder,
+  winacl,
 }:
 
 buildPythonPackage rec {
   pname = "bloodyad";
-  version = "1.1.1";
+  version = "2.1.9";
   pyproject = true;
 
   disabled = pythonOlder "3.8";
@@ -21,29 +24,24 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "CravateRouge";
     repo = "bloodyAD";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-wnq+HTAPnC7pSGI2iytSyHmdqtUq2pUnNwZnsGX8CL4=";
+    tag = "v${version}";
+    hash = "sha256-XqCP2GfS8hxlFU4Mndeh+7Ll2kXJ3Dei+AGp/oy0PUg=";
   };
 
-  nativeBuildInputs = [
-    hatchling
-  ];
+  build-system = [ hatchling ];
 
-  propagatedBuildInputs = [
+  dependencies = [
+    asn1crypto
     cryptography
-    gssapi
-    ldap3
-    pyasn1
+    dnspython
+    minikerberos
+    msldap
     winacl
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
-  pythonImportsCheck = [
-    "bloodyAD"
-  ];
+  pythonImportsCheck = [ "bloodyAD" ];
 
   disabledTests = [
     # Tests require network access

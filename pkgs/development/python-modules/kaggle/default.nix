@@ -1,36 +1,49 @@
-{ buildPythonPackage
-, bleach
-, certifi
-, fetchPypi
-, lib
-, python-dateutil
-, python-slugify
-, six
-, requests
-, tqdm
-, urllib3
+{
+  bleach,
+  buildPythonPackage,
+  certifi,
+  charset-normalizer,
+  fetchPypi,
+  hatchling,
+  idna,
+  lib,
+  python-dateutil,
+  python-slugify,
+  requests,
+  setuptools,
+  six,
+  text-unidecode,
+  tqdm,
+  urllib3,
+  webencodings,
 }:
 
 buildPythonPackage rec {
   pname = "kaggle";
-  version = "1.6.8";
-  format = "setuptools";
+  version = "1.7.4.2";
+  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-gBwqC+XN9vTJprs2cSV2AgayZvQ9RLVXx+052EiUlwA=";
+    hash = "sha256-CxRDWPQYe96D6KAzVUm/c2+0ZmlycqE1qYXrbSxvnLY=";
   };
 
-  propagatedBuildInputs = [
+  build-system = [ hatchling ];
+
+  dependencies = [
     bleach
     certifi
+    charset-normalizer
+    idna
     python-dateutil
     python-slugify
     requests
+    setuptools
     six
+    text-unidecode
     tqdm
     urllib3
-    bleach
+    webencodings
   ];
 
   # Tests try to access the network.

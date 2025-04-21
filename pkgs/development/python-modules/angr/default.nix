@@ -1,42 +1,44 @@
-{ lib
-, stdenv
-, ailment
-, archinfo
-, buildPythonPackage
-, cachetools
-, capstone
-, cffi
-, claripy
-, cle
-, cppheaderparser
-, dpkt
-, fetchFromGitHub
-, gitpython
-, itanium-demangler
-, mulpyplexer
-, nampa
-, networkx
-, progressbar2
-, protobuf
-, psutil
-, pycparser
-, pyformlang
-, pythonOlder
-, pythonRelaxDepsHook
-, pyvex
-, rich
-, rpyc
-, setuptools
-, sortedcontainers
-, sqlalchemy
-, sympy
-, unicorn
-, unique-log-filter
+{
+  lib,
+  stdenv,
+  ailment,
+  archinfo,
+  buildPythonPackage,
+  cachetools,
+  capstone,
+  cffi,
+  claripy,
+  cle,
+  cppheaderparser,
+  cxxheaderparser,
+  dpkt,
+  fetchFromGitHub,
+  gitpython,
+  itanium-demangler,
+  mulpyplexer,
+  nampa,
+  networkx,
+  progressbar2,
+  protobuf,
+  psutil,
+  pycparser,
+  pyformlang,
+  pydemumble,
+  pythonOlder,
+  pyvex,
+  rich,
+  rpyc,
+  setuptools,
+  sortedcontainers,
+  sqlalchemy,
+  sympy,
+  unicorn-angr,
+  unique-log-filter,
 }:
 
 buildPythonPackage rec {
   pname = "angr";
-  version = "9.2.97";
+  version = "9.2.150";
   pyproject = true;
 
   disabled = pythonOlder "3.11";
@@ -44,18 +46,13 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "angr";
     repo = "angr";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-eJkxflAQFI/sEL4JMlMe+kClnaVSxtoOrPg8HQpH78g=";
+    tag = "v${version}";
+    hash = "sha256-sjBLOVNqPeFbVLxvTnIpGeEpGfXx4GjomUSH9rN5rbc=";
   };
 
-  pythonRelaxDeps = [
-    "capstone"
-  ];
+  pythonRelaxDeps = [ "capstone" ];
 
-  build-system = [
-    pythonRelaxDepsHook
-    setuptools
-  ];
+  build-system = [ setuptools ];
 
   dependencies = [
     ailment
@@ -66,6 +63,7 @@ buildPythonPackage rec {
     claripy
     cle
     cppheaderparser
+    cxxheaderparser
     dpkt
     gitpython
     itanium-demangler
@@ -77,23 +75,21 @@ buildPythonPackage rec {
     psutil
     pycparser
     pyformlang
+    pydemumble
     pyvex
     rich
     rpyc
     sortedcontainers
-    sqlalchemy
     sympy
-    unicorn
     unique-log-filter
   ];
 
-  passthru.optional-dependencies = {
-    AngrDB = [
-      sqlalchemy
-    ];
+  optional-dependencies = {
+    angrdb = [ sqlalchemy ];
+    unicorn = [ unicorn-angr ];
   };
 
-  setupPyBuildFlags = lib.optionals stdenv.isLinux [
+  setupPyBuildFlags = lib.optionals stdenv.hostPlatform.isLinux [
     "--plat-name"
     "linux"
   ];
@@ -113,7 +109,7 @@ buildPythonPackage rec {
   meta = with lib; {
     description = "Powerful and user-friendly binary analysis platform";
     homepage = "https://angr.io/";
-    license = with licenses; [ bsd2 ];
+    license = licenses.bsd2;
     maintainers = with maintainers; [ fab ];
   };
 }

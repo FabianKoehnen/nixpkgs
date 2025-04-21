@@ -1,35 +1,36 @@
-{ lib
-, buildGoModule
-, copyDesktopItems
-, darwin
-, desktopToDarwinBundle
-, fetchFromGitHub
-, fetchYarnDeps
-, gtk3
-, installShellFiles
-, jq
-, libayatana-appindicator
-, libsoup
-, makeDesktopItem
-, mkYarnPackage
-, openssl
-, pkg-config
-, rust
-, rustPlatform
-, stdenv
-, testers
-, webkitgtk
+{
+  lib,
+  buildGoModule,
+  copyDesktopItems,
+  darwin,
+  desktopToDarwinBundle,
+  fetchFromGitHub,
+  fetchYarnDeps,
+  gtk3,
+  installShellFiles,
+  jq,
+  libayatana-appindicator,
+  libsoup_2_4,
+  makeDesktopItem,
+  mkYarnPackage,
+  openssl,
+  pkg-config,
+  rust,
+  rustPlatform,
+  stdenv,
+  testers,
+  webkitgtk_4_0,
 }:
 
 let
   pname = "devpod";
-  version = "0.5.4";
+  version = "0.5.20";
 
   src = fetchFromGitHub {
     owner = "loft-sh";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-BXr+2uia5skNRpdo8T+0uOVdh6WmWeC42PGNSURJhas=";
+    sha256 = "sha256-8LbqrOKC1als3Xm6ZuU2AySwT0UWjLN2xh+/CvioYew=";
   };
 
   meta = with lib; {
@@ -42,11 +43,16 @@ let
 in
 rec {
   devpod = buildGoModule {
-    inherit version src pname meta;
+    inherit
+      version
+      src
+      pname
+      meta
+      ;
 
     vendorHash = null;
 
-    CGO_ENABLED = 0;
+    env.CGO_ENABLED = 0;
 
     ldflags = [
       "-X github.com/loft-sh/devpod/pkg/version.version=v${version}"
@@ -80,7 +86,7 @@ rec {
 
         offlineCache = fetchYarnDeps {
           yarnLock = "${src}/desktop/yarn.lock";
-          sha256 = "sha256-I+c0zrybNv3iS+Wy+n+NlBalA6gLYuxBw00mAJbqgfU=";
+          hash = "sha256-vUV4yX+UvEKrP0vHxjGwtW2WyONGqHVmFor+WqWbkCc=";
         };
 
         packageJSON = ./package.json;
@@ -96,7 +102,7 @@ rec {
         dontInstall = true;
       };
 
-      rustTargetPlatformSpec = rust.toRustTargetSpec stdenv.hostPlatform;
+      rustTargetPlatformSpec = stdenv.hostPlatform.rust.rustcTarget;
     in
     rustPlatform.buildRustPackage {
       inherit version src;
@@ -104,12 +110,8 @@ rec {
 
       sourceRoot = "${src.name}/desktop/src-tauri";
 
-      cargoLock = {
-        lockFile = ./Cargo.lock;
-        outputHashes = {
-          "tauri-plugin-log-0.0.0" = "sha256-M6uGcf4UWAU+494wAK/r2ta1c3IZ07iaURLwJJR9F3U=";
-        };
-      };
+      useFetchCargoVendor = true;
+      cargoHash = "sha256-HD9b7OWilltL5Ymj28zoZwv5TJV3HT3LyCdagMqLH6E=";
 
       # Workaround:
       #   The `tauri` dependency features on the `Cargo.toml` file does not match the allowlist defined under `tauri.conf.json`.
@@ -117,41 +119,49 @@ rec {
       # Upstream is not interested in fixing that: https://github.com/loft-sh/devpod/pull/648
       patches = [ ./add-tauri-updater-feature.patch ];
 
-      postPatch = ''
-        ln -s ${devpod}/bin/devpod bin/devpod-cli-${rustTargetPlatformSpec}
-        cp -r ${frontend-build} frontend-build
+      postPatch =
+        ''
+          ln -s ${devpod}/bin/devpod bin/devpod-cli-${rustTargetPlatformSpec}
+          cp -r ${frontend-build} frontend-build
 
-        substituteInPlace tauri.conf.json --replace '"distDir": "../dist",' '"distDir": "frontend-build",'
-      '' + lib.optionalString stdenv.isLinux ''
-        substituteInPlace $cargoDepsCopy/libappindicator-sys-*/src/lib.rs \
-          --replace "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
+          substituteInPlace tauri.conf.json --replace '"distDir": "../dist",' '"distDir": "frontend-build",'
+        ''
+        + lib.optionalString stdenv.hostPlatform.isLinux ''
+          substituteInPlace $cargoDepsCopy/libappindicator-sys-*/src/lib.rs \
+            --replace "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
 
-        # Since `cargo build` is used instead of `tauri build`, configs are merged manually.
-        jq --slurp '.[0] * .[1]' tauri.conf.json tauri-linux.conf.json >tauri.conf.json.merged
-        mv tauri.conf.json.merged tauri.conf.json
-      '';
+          # Since `cargo build` is used instead of `tauri build`, configs are merged manually.
+          jq --slurp '.[0] * .[1]' tauri.conf.json tauri-linux.conf.json >tauri.conf.json.merged
+          mv tauri.conf.json.merged tauri.conf.json
+        '';
 
-      nativeBuildInputs = [
-        copyDesktopItems
-        pkg-config
-      ] ++ lib.optionals stdenv.isLinux [
-        jq
-      ] ++ lib.optionals stdenv.isDarwin [
-        desktopToDarwinBundle
-      ];
+      nativeBuildInputs =
+        [
+          copyDesktopItems
+          pkg-config
+        ]
+        ++ lib.optionals stdenv.hostPlatform.isLinux [
+          jq
+        ]
+        ++ lib.optionals stdenv.hostPlatform.isDarwin [
+          desktopToDarwinBundle
+        ];
 
-      buildInputs = [
-        libsoup
-        openssl
-      ] ++ lib.optionals stdenv.isLinux [
-        gtk3
-        libayatana-appindicator
-        webkitgtk
-      ] ++ lib.optionals stdenv.isDarwin [
-        darwin.apple_sdk.frameworks.Carbon
-        darwin.apple_sdk.frameworks.Cocoa
-        darwin.apple_sdk.frameworks.WebKit
-      ];
+      buildInputs =
+        [
+          libsoup_2_4
+          openssl
+        ]
+        ++ lib.optionals stdenv.hostPlatform.isLinux [
+          gtk3
+          libayatana-appindicator
+          webkitgtk_4_0
+        ]
+        ++ lib.optionals stdenv.hostPlatform.isDarwin [
+          darwin.apple_sdk.frameworks.Carbon
+          darwin.apple_sdk.frameworks.Cocoa
+          darwin.apple_sdk.frameworks.WebKit
+        ];
 
       desktopItems = [
         (makeDesktopItem {

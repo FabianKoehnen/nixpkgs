@@ -6,11 +6,14 @@
   deprecated,
   dirtyjson,
   fetchFromGitHub,
+  filetype,
   fsspec,
+  jsonpath-ng,
   llamaindex-py-client,
   nest-asyncio,
   networkx,
   nltk,
+  nltk-data,
   numpy,
   openai,
   pandas,
@@ -20,18 +23,20 @@
   pytest-mock,
   pytestCheckHook,
   pythonOlder,
+  pyvis,
   pyyaml,
   requests,
-  tree-sitter,
+  spacy,
   sqlalchemy,
   tenacity,
   tiktoken,
+  tree-sitter,
   typing-inspect,
 }:
 
 buildPythonPackage rec {
   pname = "llama-index-core";
-  version = "0.10.27";
+  version = "0.12.23";
   pyproject = true;
 
   disabled = pythonOlder "3.8";
@@ -39,11 +44,27 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "run-llama";
     repo = "llama_index";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-jfmoj9TOrFngHs8s7qeMHit/7YGdGX8GrqJMu3avWs4=";
+    tag = "v${version}";
+    hash = "sha256-GFzaorzjeQGreyUjRXP7v7djbSq2boLWZjwO4R2W9E4=";
   };
 
   sourceRoot = "${src.name}/${pname}";
+
+  # When `llama-index` is imported, it uses `nltk` to look for the following files and tries to
+  # download them if they aren't present.
+  # https://github.com/run-llama/llama_index/blob/6efa53cebd5c8ccf363582c932fffde44d61332e/llama-index-core/llama_index/core/utils.py#L59-L67
+  # Setting `NLTK_DATA` to a writable path can also solve this problem, but it needs to be done in
+  # every package that depends on `llama-index-core` for `pythonImportsCheck` not to fail, so this
+  # solution seems more elegant.
+  postPatch = ''
+    mkdir -p llama_index/core/_static/nltk_cache/corpora/stopwords/
+    cp -r ${nltk-data.stopwords}/corpora/stopwords/* llama_index/core/_static/nltk_cache/corpora/stopwords/
+
+    mkdir -p llama_index/core/_static/nltk_cache/tokenizers/punkt/
+    cp -r ${nltk-data.punkt}/tokenizers/punkt/* llama_index/core/_static/nltk_cache/tokenizers/punkt/
+  '';
+
+  pythonRelaxDeps = [ "tenacity" ];
 
   build-system = [ poetry-core ];
 
@@ -52,7 +73,9 @@ buildPythonPackage rec {
     dataclasses-json
     deprecated
     dirtyjson
+    filetype
     fsspec
+    jsonpath-ng
     llamaindex-py-client
     nest-asyncio
     networkx
@@ -61,8 +84,10 @@ buildPythonPackage rec {
     openai
     pandas
     pillow
+    pyvis
     pyyaml
     requests
+    spacy
     sqlalchemy
     tenacity
     tiktoken
@@ -102,10 +127,24 @@ buildPythonPackage rec {
     "tests/tools/"
   ];
 
+  disabledTests = [
+    # Tests require network access
+    "test_from_namespaced_persist_dir"
+    "test_from_persist_dir"
+    "test_context_extraction_basic"
+    "test_context_extraction_oversized_document"
+    "test_context_extraction_custom_prompt"
+    "test_multiple_documents_context"
+    "test_mimetype_raw_data"
+    # asyncio.exceptions.InvalidStateError: invalid state
+    "test_workflow_context_to_dict_mid_run"
+    "test_SimpleDirectoryReader"
+  ];
+
   meta = with lib; {
     description = "Data framework for your LLM applications";
     homepage = "https://github.com/run-llama/llama_index/";
-    changelog = "https://github.com/run-llama/llama_index/blob/${version}/CHANGELOG.md";
+    changelog = "https://github.com/run-llama/llama_index/blob/${src.tag}/CHANGELOG.md";
     license = licenses.mit;
     maintainers = with maintainers; [ fab ];
   };

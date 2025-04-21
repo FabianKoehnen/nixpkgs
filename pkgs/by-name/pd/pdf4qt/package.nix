@@ -1,24 +1,26 @@
-{ lib
-, stdenv
-, fetchFromGitHub
-, substituteAll
-, lcms
-, cmake
-, pkg-config
-, qt6
-, openjpeg
-, tbb_2021_11
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  lcms,
+  cmake,
+  pkg-config,
+  qt6,
+  wrapGAppsHook3,
+  openjpeg,
+  tbb_2021_11,
+  blend2d,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "pdf4qt";
-  version = "1.3.7";
+  version = "1.5.0.0";
 
   src = fetchFromGitHub {
     owner = "JakubMelka";
     repo = "PDF4QT";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-wZJDMLEaHGBPSToQ+ObSfB5tw/fTIX1i5tmNPmIa7Ck=";
+    hash = "sha256-ELdmnOEKFGCtuf240R/0M6r8aPwRQiXurAxrqcCZvOI=";
   };
 
   patches = [
@@ -28,11 +30,26 @@ stdenv.mkDerivation (finalAttrs: {
     ./find_lcms2_path.patch
   ];
 
+  # make calls to QString::arg compatible with Qt 6.9
+  # see https://doc-snapshots.qt.io/qt6-6.9/whatsnew69.html#new-features-in-qt-6-9
+  postPatch = ''
+    substituteInPlace Pdf4QtLibCore/sources/pdf{documentsanitizer,optimizer}.cpp \
+      --replace-fail \
+        '.arg(counter)' \
+        '.arg<PDFInteger>(counter)'
+    substituteInPlace Pdf4QtLibCore/sources/pdfoptimizer.cpp \
+      --replace-fail \
+        '.arg(bytesSaved)' \
+        '.arg<PDFInteger>(bytesSaved)'
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
     qt6.qttools
     qt6.wrapQtAppsHook
+    # GLib-GIO-ERROR: No GSettings schemas are installed on the system
+    wrapGAppsHook3
   ];
 
   buildInputs = [
@@ -43,11 +60,18 @@ stdenv.mkDerivation (finalAttrs: {
     lcms
     openjpeg
     tbb_2021_11
+    blend2d
   ];
 
   cmakeFlags = [
     (lib.cmakeBool "PDF4QT_INSTALL_TO_USR" false)
   ];
+
+  dontWrapGApps = true;
+
+  preFixup = ''
+    qtWrapperArgs+=(''${gappsWrapperArgs[@]})
+  '';
 
   meta = {
     description = "Open source PDF editor";

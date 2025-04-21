@@ -1,15 +1,38 @@
-{ lib, fetchFromGitHub, buildGoModule, installShellFiles, callPackage, nixosTests }:
+{
+  lib,
+  nodejs,
+  pnpm,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
+  callPackage,
+  nixosTests,
+  authelia-web ? callPackage ./web.nix { inherit nodejs pnpm fetchFromGitHub; },
+}:
 
 let
-  inherit (import ./sources.nix { inherit fetchFromGitHub; }) pname version src vendorHash;
-  web = callPackage ./web.nix { };
+  inherit (import ./sources.nix { inherit fetchFromGitHub; })
+    pname
+    version
+    src
+    vendorHash
+    ;
+
+  web = authelia-web;
 in
 buildGoModule rec {
-  inherit pname version src vendorHash;
+  inherit
+    pname
+    version
+    src
+    vendorHash
+    ;
 
   nativeBuildInputs = [ installShellFiles ];
 
+  ## FIXME: add swagger-ui https://github.com/authelia/authelia/blob/master/cmd/authelia-scripts/cmd/build.go#L148
   postPatch = ''
+    cp -r api internal/server/public_html
     cp -r ${web}/share/authelia-web/* internal/server/public_html
   '';
 
@@ -27,6 +50,11 @@ buildGoModule rec {
       "-X ${p}.BuildBranch=v${version}"
       "-X ${p}.BuildExtra=nixpkgs"
     ];
+
+  # It is required to set this to avoid a change in the
+  # handling of sync map in go 1.24+
+  # Upstream issue: https://github.com/authelia/authelia/issues/8980
+  env.GOEXPERIMENT = "nosynchashtriemap";
 
   # several tests with networking and several that want chromium
   doCheck = false;
@@ -62,7 +90,7 @@ buildGoModule rec {
   meta = with lib; {
     homepage = "https://www.authelia.com/";
     changelog = "https://github.com/authelia/authelia/releases/tag/v${version}";
-    description = "A Single Sign-On Multi-Factor portal for web apps";
+    description = "Single Sign-On Multi-Factor portal for web apps";
     longDescription = ''
       Authelia is an open-source authentication and authorization server
       providing two-factor authentication and single sign-on (SSO) for your
@@ -72,7 +100,11 @@ buildGoModule rec {
       authentication.
     '';
     license = licenses.asl20;
-    maintainers = with maintainers; [ jk dit7ya ];
+    maintainers = with maintainers; [
+      jk
+      dit7ya
+      nicomem
+    ];
     mainProgram = "authelia";
   };
 }

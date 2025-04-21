@@ -1,5 +1,9 @@
-{ lib, vscode-utils, terraform-ls }:
-vscode-utils.buildVscodeMarketplaceExtension rec {
+{
+  lib,
+  vscode-utils,
+  terraform-ls,
+}:
+vscode-utils.buildVscodeMarketplaceExtension {
   mktplcRef = {
     name = "terraform";
     publisher = "hashicorp";

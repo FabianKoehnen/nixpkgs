@@ -1,30 +1,38 @@
-{ lib, rustPlatform, fetchFromGitHub, stdenv, Security }:
+{
+  lib,
+  rustPlatform,
+  fetchFromGitHub,
+}:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cargo-vet";
-  version = "0.8.0";
+  version = "0.10.1";
 
   src = fetchFromGitHub {
     owner = "mozilla";
-    repo = pname;
-    rev = version;
-    sha256 = "sha256-VnOqQ1dKgNZSHTzJrD7stoCzNGrSkYxcLDJAsrJUsEQ=";
+    repo = "cargo-vet";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-HSEhFCcdC79OA8MP73De+iLIjcr1XMHxfJ9a1Q3JJYI=";
   };
 
-  cargoSha256 = "sha256-M8sZzgSEMIB6pPVaE+tC18MCbwYaYpHOnhrEvm9JTso=";
-
-  buildInputs = lib.optional stdenv.isDarwin Security;
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-+X6DLxWPWMcGzJMVZAj3C5P5MyywIb4ml0Jsyo9/uAE=";
 
   # the test_project tests require internet access
-  checkFlags = [
-    "--skip=test_project"
-  ];
+  checkFlags = [ "--skip=test_project" ];
 
-  meta = with lib; {
-    description = "A tool to help projects ensure that third-party Rust dependencies have been audited by a trusted source";
+  meta = {
+    description = "Tool to help projects ensure that third-party Rust dependencies have been audited by a trusted source";
     mainProgram = "cargo-vet";
     homepage = "https://mozilla.github.io/cargo-vet";
-    license = with licenses; [ asl20 /* or */ mit ];
-    maintainers = with maintainers; [ figsoda jk ];
+    license = with lib.licenses; [
+      asl20 # or
+      mit
+    ];
+    maintainers = with lib.maintainers; [
+      figsoda
+      jk
+      matthiasbeyer
+    ];
   };
-}
+})

@@ -1,46 +1,65 @@
-{ callPackage, makeFontsConf, gnome2, buildFHSEnv, tiling_wm ? false }:
+{
+  callPackage,
+  makeFontsConf,
+  buildFHSEnv,
+  tiling_wm ? false,
+}:
 
 let
-  mkStudio = opts: callPackage (import ./common.nix opts) {
-    fontsConf = makeFontsConf {
-      fontDirectories = [];
+  mkStudio =
+    opts:
+    callPackage (import ./common.nix opts) {
+      fontsConf = makeFontsConf {
+        fontDirectories = [ ];
+      };
+      inherit buildFHSEnv;
+      inherit tiling_wm;
     };
-    inherit (gnome2) GConf gnome_vfs;
-    inherit buildFHSEnv;
-    inherit tiling_wm;
-  };
   stableVersion = {
-    version = "2023.2.1.24"; # "Android Studio Iguana | 2023.2.1 Patch 1"
-    sha256Hash = "sha256-ACZCdXKEnJy7DJTW+XGOoIvDRdzP47NytUEAqV//mbU=";
+    version = "2024.3.1.14"; # "Android Studio Meerkat | 2024.3.1 Patch 1"
+    sha256Hash = "sha256-VNXErfb4PhljcJwGq863ldh/3i8fMdJirlwolEIk+fI=";
   };
   betaVersion = {
-    version = "2023.3.1.15"; # "Android Studio Jellyfish | 2023.3.1.1 Beta 2"
-    sha256Hash = "sha256-ImXHda8Xbayuk+OMZVtAFsGNnaqm2PvI3lko2gUpIeU=";
+    version = "2024.3.2.11"; # "Android Studio Meerkat Feature Drop | 2024.3.2 RC 2"
+    sha256Hash = "sha256-pE17kbLnsEMRtaQencKqckW3uke9IliLkoHP6q3NrQg=";
   };
   latestVersion = {
-    version = "2024.1.1.1"; # "Android Studio Koala | 2024.1.1 Canary 3"
-    sha256Hash = "sha256-QNAudFlM+1QAZg+EYgiIknllai4N1wj55ZnkUWho7ps=";
+    version = "2025.1.1.6"; # "Android Studio Narwhal | 2025.1.1 Canary 6"
+    sha256Hash = "sha256-FUDb8/kyvO3M/NJp30VZCyNacJ90y/fawrDTFin7g6o=";
   };
-in {
+in
+{
   # Attributes are named by their corresponding release channels
 
-  stable = mkStudio (stableVersion // {
-    channel = "stable";
-    pname = "android-studio";
-  });
+  stable = mkStudio (
+    stableVersion
+    // {
+      channel = "stable";
+      pname = "android-studio";
+    }
+  );
 
-  beta = mkStudio (betaVersion // {
-    channel = "beta";
-    pname = "android-studio-beta";
-  });
+  beta = mkStudio (
+    betaVersion
+    // {
+      channel = "beta";
+      pname = "android-studio-beta";
+    }
+  );
 
-  dev = mkStudio (latestVersion // {
-    channel = "dev";
-    pname = "android-studio-dev";
-  });
+  dev = mkStudio (
+    latestVersion
+    // {
+      channel = "dev";
+      pname = "android-studio-dev";
+    }
+  );
 
-  canary = mkStudio (latestVersion // {
-    channel = "canary";
-    pname = "android-studio-canary";
-  });
+  canary = mkStudio (
+    latestVersion
+    // {
+      channel = "canary";
+      pname = "android-studio-canary";
+    }
+  );
 }

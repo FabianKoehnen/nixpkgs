@@ -1,19 +1,21 @@
-{ lib
-, fetchFromGitHub
-, rustPlatform
+{
+  lib,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage rec {
   pname = "tenki";
-  version = "1.5.0";
+  version = "1.11.0";
 
   src = fetchFromGitHub {
     owner = "ckaznable";
     repo = "tenki";
     rev = "v${version}";
-    hash = "sha256-X/GnOgxwBhkrdhUmEhyxdgk5ElayMOAmtDxR2cqRJc8=";
+    hash = "sha256-jd7D0iC3+s3w6uG0WqlvL9F4xQL+cQzsUvAIOc7ORgw=";
   };
 
-  cargoHash = "sha256-rmMUVZwNouUvFFPgZfbR4sgtig5zx1WC3bxnfPPT3yQ=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-jV+KHHAPpsFxNnBaMPE5XYDG4Fhn3a89NBUpZg++YUE=";
 
   meta = with lib; {
     description = "tty-clock with weather effect";

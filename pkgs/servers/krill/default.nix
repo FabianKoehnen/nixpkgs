@@ -1,33 +1,35 @@
-{ lib
-, rustPlatform
-, fetchFromGitHub
-, openssl
-, pkg-config
-, stdenv
-, Security
+{
+  lib,
+  rustPlatform,
+  fetchFromGitHub,
+  openssl,
+  pkg-config,
+  stdenv,
+  Security,
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "krill";
-  version = "0.14.4";
+  version = "0.14.6";
 
   src = fetchFromGitHub {
     owner = "NLnetLabs";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-J/QChAFjcUdtrfs5KUIRwfJdfCB/gRnIUNyinf66Slo=";
+    hash = "sha256-U7uanUE/xdmXqtpvnG6b+oDKamNZkCH04OCy3Y5UIhQ=";
   };
 
-  cargoHash = "sha256-Cwrgdo+mirH3kGXwBgCzeO1xiEhSrt/Fx8LxhaBJJLE=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-PR8HoHroHp5nBbRwR8TZ5NeBH4eDXGV46HkDLeydmAk=";
 
-  buildInputs = [ openssl ] ++ lib.optional stdenv.isDarwin Security;
+  buildInputs = [ openssl ] ++ lib.optional stdenv.hostPlatform.isDarwin Security;
   nativeBuildInputs = [ pkg-config ];
 
   # Needed to get openssl-sys to use pkgconfig.
   OPENSSL_NO_VENDOR = 1;
 
   # disable failing tests on darwin
-  doCheck = !stdenv.isDarwin;
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   meta = with lib; {
     description = "RPKI Certificate Authority and Publication Server written in Rust";

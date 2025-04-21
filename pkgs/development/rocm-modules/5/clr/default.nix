@@ -1,25 +1,27 @@
-{ lib
-, stdenv
-, callPackage
-, fetchFromGitHub
-, rocmUpdateScript
-, makeWrapper
-, cmake
-, perl
-, clang
-, hip-common
-, hipcc
-, rocm-device-libs
-, rocm-comgr
-, rocm-runtime
-, roctracer
-, rocminfo
-, rocm-smi
-, numactl
-, libGL
-, libxml2
-, libX11
-, python3Packages
+{
+  lib,
+  stdenv,
+  callPackage,
+  fetchFromGitHub,
+  fetchurl,
+  rocmUpdateScript,
+  makeWrapper,
+  cmake,
+  perl,
+  clang,
+  hip-common,
+  hipcc,
+  rocm-device-libs,
+  rocm-comgr,
+  rocm-runtime,
+  roctracer,
+  rocminfo,
+  rocm-smi,
+  numactl,
+  libGL,
+  libxml2,
+  libX11,
+  python3Packages,
 }:
 
 let
@@ -33,7 +35,18 @@ let
     "--set HSA_PATH ${rocm-runtime}"
     "--set ROCM_PATH $out"
   ];
-in stdenv.mkDerivation (finalAttrs: {
+
+  # https://github.com/NixOS/nixpkgs/issues/305641
+  # Not needed when 3.29.2 is in unstable
+  cmake' = cmake.overrideAttrs (old: rec {
+    version = "3.29.2";
+    src = fetchurl {
+      url = "https://cmake.org/files/v${lib.versions.majorMinor version}/cmake-${version}.tar.gz";
+      hash = "sha256-NttLaSaqt0G6bksuotmckZMiITIwi03IJNQSPLcwNS4=";
+    };
+  });
+in
+stdenv.mkDerivation (finalAttrs: {
   pname = "clr";
   version = "5.7.1";
 
@@ -51,7 +64,7 @@ in stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [
     makeWrapper
-    cmake
+    cmake'
     perl
     python3Packages.python
     python3Packages.cppheaderparser
@@ -103,6 +116,10 @@ in stdenv.mkDerivation (finalAttrs: {
 
     substituteInPlace hipamd/src/hip_embed_pch.sh \
       --replace "\''$LLVM_DIR/bin/clang" "${clang}/bin/clang"
+
+    substituteInPlace opencl/khronos/icd/loader/icd_platform.h \
+      --replace-fail '#define ICD_VENDOR_PATH "/etc/OpenCL/vendors/";' \
+                     '#define ICD_VENDOR_PATH "/run/opengl-driver/etc/OpenCL/vendors/";'
   '';
 
   postInstall = ''
@@ -122,6 +139,11 @@ in stdenv.mkDerivation (finalAttrs: {
     # Replace rocm-opencl-icd functionality
     mkdir -p $icd/etc/OpenCL/vendors
     echo "$out/lib/libamdocl64.so" > $icd/etc/OpenCL/vendors/amdocl64.icd
+
+    # add version info to output (downstream rocmPackages look for this)
+    echo "HIP_VERSION_MAJOR=${builtins.elemAt (lib.splitVersion finalAttrs.version) 0}" > $out/bin/.hipVersion
+    echo "HIP_VERSION_MINOR=${builtins.elemAt (lib.splitVersion finalAttrs.version) 1}" >> $out/bin/.hipVersion
+    echo "HIP_VERSION_PATCH=${builtins.elemAt (lib.splitVersion finalAttrs.version) 2}" >> $out/bin/.hipVersion
   '';
 
   passthru = {
@@ -170,6 +192,8 @@ in stdenv.mkDerivation (finalAttrs: {
     license = with licenses; [ mit ];
     maintainers = with maintainers; [ lovesegfault ] ++ teams.rocm.members;
     platforms = platforms.linux;
-    broken = versions.minor finalAttrs.version != versions.minor stdenv.cc.version || versionAtLeast finalAttrs.version "6.0.0";
+    broken =
+      versions.minor finalAttrs.version != versions.minor stdenv.cc.version
+      || versionAtLeast finalAttrs.version "6.0.0";
   };
 })

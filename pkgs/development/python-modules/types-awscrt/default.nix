@@ -1,30 +1,27 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, poetry-core
-, pythonOlder
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  pythonOlder,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "types-awscrt";
-  version = "0.20.5";
+  version = "0.26.1";
   pyproject = true;
 
-  disabled = pythonOlder "3.7";
+  disabled = pythonOlder "3.8";
 
   src = fetchPypi {
     pname = "types_awscrt";
     inherit version;
-    hash = "sha256-YYEbv03pUkiTn5J2pDS+k9K5X2zP6KqU5WmZ6XeM/MI=";
+    hash = "sha256-rKlviJs3RcDnT0Lwjyd/7Tv26bqiz5sGo29413cg5QQ=";
   };
 
-  nativeBuildInputs = [
-    poetry-core
-  ];
+  build-system = [ setuptools ];
 
-  pythonImportsCheck = [
-    "awscrt-stubs"
-  ];
+  pythonImportsCheck = [ "awscrt-stubs" ];
 
   meta = with lib; {
     description = "Type annotations and code completion for awscrt";

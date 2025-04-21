@@ -1,30 +1,36 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, pythonRelaxDepsHook
-, flit-core
-, certifi
-, cryptography
-, python-dateutil
-, typing-extensions
-, urllib3
+{
+  lib,
+  buildPythonPackage,
+  certifi,
+  cryptography,
+  docker,
+  fetchFromGitHub,
+  flit-core,
+  podman,
+  pycryptodome,
+  pytestCheckHook,
+  python-dateutil,
+  typing-extensions,
+  urllib3,
 }:
 
-let
+buildPythonPackage rec {
   pname = "nethsm";
-  version = "1.0.0";
-in
-
-buildPythonPackage {
-  inherit pname version;
+  version = "1.3.0";
   pyproject = true;
 
-  src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-sENuSdA4pYt8v2w2RvDkcQLYCP9V0vZOdWOlkNBi3/o=";
+  src = fetchFromGitHub {
+    owner = "Nitrokey";
+    repo = "nethsm-sdk-py";
+    tag = "v${version}";
+    hash = "sha256-vH5YjS3VO5krCMVQFcEgDhJeCUzo9EzFnBxq+zPuZ68=";
   };
 
-  propagatedBuildInputs = [
+  pythonRelaxDeps = true;
+
+  build-system = [ flit-core ];
+
+  dependencies = [
     certifi
     cryptography
     python-dateutil
@@ -32,20 +38,30 @@ buildPythonPackage {
     urllib3
   ];
 
-  nativeBuildInputs = [
-    flit-core
-    pythonRelaxDepsHook
+  nativeCheckInputs = [
+    docker
+    podman
+    pycryptodome
+    pytestCheckHook
   ];
 
-  pythonRelaxDeps = true;
-
   pythonImportsCheck = [ "nethsm" ];
+
+  disabledTestPaths = [
+    # Tests require a running Docker instance
+    "tests/test_nethsm_config.py"
+    "tests/test_nethsm_keys.py"
+    "tests/test_nethsm_namespaces.py"
+    "tests/test_nethsm_other.py"
+    "tests/test_nethsm_system.py"
+    "tests/test_nethsm_users.py"
+  ];
 
   meta = with lib; {
     description = "Client-side Python SDK for NetHSM";
     homepage = "https://github.com/Nitrokey/nethsm-sdk-py";
     changelog = "https://github.com/Nitrokey/nethsm-sdk-py/releases/tag/v${version}";
-    license = with licenses; [ asl20 ];
+    license = licenses.asl20;
     maintainers = with maintainers; [ frogamic ];
   };
 }

@@ -1,8 +1,8 @@
 {
   hash,
   lts ? false,
-  patches,
-  updateScriptArgs ? "",
+  patches ? [ ],
+  nixUpdateExtraArgs ? [ ],
   vendorHash,
   version,
 }:
@@ -12,38 +12,65 @@
   lib,
   buildGoModule,
   fetchFromGitHub,
-  writeScript,
-  writeShellScript,
   acl,
+  buildPackages,
   cowsql,
-  hwdata,
+  incus-ui-canonical,
   libcap,
   lxc,
   pkg-config,
   sqlite,
   udev,
   installShellFiles,
+  nix-update-script,
   nixosTests,
 }:
 
 let
   pname = "incus${lib.optionalString lts "-lts"}";
+  docsPython = buildPackages.python3.withPackages (
+    py: with py; [
+      furo
+      gitpython
+      linkify-it-py
+      canonical-sphinx-extensions
+      myst-parser
+      pyspelling
+      sphinx
+      sphinx-autobuild
+      sphinx-copybutton
+      sphinx-design
+      sphinx-notfound-page
+      sphinx-remove-toctrees
+      sphinx-reredirects
+      sphinx-tabs
+      sphinxcontrib-jquery
+      sphinxext-opengraph
+    ]
+  );
 in
 
-buildGoModule rec {
+buildGoModule (finalAttrs: {
   inherit
-    patches
     pname
     vendorHash
     version
     ;
 
+  outputs = [
+    "out"
+    "agent_loader"
+    "doc"
+  ];
+
   src = fetchFromGitHub {
     owner = "lxc";
     repo = "incus";
-    rev = "refs/tags/v${version}";
+    tag = "v${version}";
     inherit hash;
   };
+
+  patches = [ ./docs.patch ] ++ patches;
 
   excludedPackages = [
     # statically compile these
@@ -57,6 +84,7 @@ buildGoModule rec {
   nativeBuildInputs = [
     installShellFiles
     pkg-config
+    docsPython
   ];
 
   buildInputs = [
@@ -78,10 +106,18 @@ buildGoModule rec {
   CGO_LDFLAGS_ALLOW = "(-Wl,-wrap,pthread_create)|(-Wl,-z,now)";
 
   postBuild = ''
+    # build docs
+    mkdir -p .sphinx/deps
+    ln -s ${buildPackages.python3.pkgs.swagger-ui-bundle.src} .sphinx/deps/swagger-ui
+    substituteInPlace Makefile --replace-fail '. $(SPHINXENV) ; ' ""
+    make doc-incremental
+
+    # build some static executables
     make incus-agent incus-migrate
   '';
 
-  preCheck =
+  # Disable tests requiring local operations
+  checkFlags =
     let
       skippedTests = [
         "TestValidateConfig"
@@ -91,37 +127,44 @@ buildGoModule rec {
         "TestContainerTestSuite"
       ];
     in
-    ''
-      # Disable tests requiring local operations
-      buildFlagsArray+=("-run" "[^(${builtins.concatStringsSep "|" skippedTests})]")
-    '';
+    [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
   postInstall = ''
     installShellCompletion --cmd incus \
       --bash <($out/bin/incus completion bash) \
       --fish <($out/bin/incus completion fish) \
       --zsh <($out/bin/incus completion zsh)
+
+    mkdir -p $agent_loader/bin $agent_loader/etc/systemd/system $agent_loader/lib/udev/rules.d
+    cp internal/server/instance/drivers/agent-loader/incus-agent-setup $agent_loader/bin/
+    chmod +x $agent_loader/bin/incus-agent-setup
+    patchShebangs $agent_loader/bin/incus-agent-setup
+    cp internal/server/instance/drivers/agent-loader/systemd/incus-agent.service $agent_loader/etc/systemd/system/
+    cp internal/server/instance/drivers/agent-loader/systemd/incus-agent.rules $agent_loader/lib/udev/rules.d/99-incus-agent.rules
+    substituteInPlace $agent_loader/etc/systemd/system/incus-agent.service --replace-fail 'TARGET/systemd' "$agent_loader/bin"
+
+    mkdir $doc
+    cp -R doc/html $doc/
   '';
 
   passthru = {
     client = callPackage ./client.nix {
       inherit
         lts
-        meta
         patches
-        src
         vendorHash
         version
         ;
+      inherit (finalAttrs) meta src;
     };
 
-    tests = nixosTests.incus;
+    tests = if lts then nixosTests.incus-lts.all else nixosTests.incus.all;
 
-    ui = callPackage ./ui.nix { };
+    ui = lib.warnOnInstantiate "`incus.ui` renamed to `incus-ui-canonical`" incus-ui-canonical;
 
-    updateScript = writeScript "ovs-update.nu" ''
-      ${./update.nu} ${updateScriptArgs}
-    '';
+    updateScript = nix-update-script {
+      extraArgs = nixUpdateExtraArgs;
+    };
   };
 
   meta = {
@@ -133,4 +176,4 @@ buildGoModule rec {
     platforms = lib.platforms.linux;
     mainProgram = "incus";
   };
-}
+})

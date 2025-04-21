@@ -1,39 +1,47 @@
-{ lib
-, aiohttp
-, apscheduler
-, azure-identity
-, azure-keyvault-secrets
-, backoff
-, buildPythonPackage
-, click
-, fastapi
-, fastapi-sso
-, fetchFromGitHub
-, google-cloud-kms
-, gunicorn
-, importlib-metadata
-, jinja2
-, openai
-, orjson
-, poetry-core
-, prisma
-, pyjwt
-, python-dotenv
-, python-multipart
-, pythonOlder
-, pyyaml
-, requests
-, resend
-, rq
-, streamlit
-, tiktoken
-, tokenizers
-, uvicorn
+{
+  lib,
+  aiohttp,
+  apscheduler,
+  azure-identity,
+  azure-keyvault-secrets,
+  backoff,
+  buildPythonPackage,
+  click,
+  cryptography,
+  email-validator,
+  fastapi,
+  fastapi-sso,
+  fetchFromGitHub,
+  google-cloud-kms,
+  gunicorn,
+  importlib-metadata,
+  jinja2,
+  jsonschema,
+  mcp,
+  openai,
+  orjson,
+  poetry-core,
+  prisma,
+  pydantic,
+  pyjwt,
+  pynacl,
+  python-dotenv,
+  python-multipart,
+  pythonOlder,
+  pyyaml,
+  requests,
+  resend,
+  rq,
+  tiktoken,
+  tokenizers,
+  uvloop,
+  uvicorn,
+  nixosTests,
 }:
 
 buildPythonPackage rec {
   pname = "litellm";
-  version = "1.34.20";
+  version = "1.65.0";
   pyproject = true;
 
   disabled = pythonOlder "3.8";
@@ -41,34 +49,33 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "BerriAI";
     repo = "litellm";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-9MZOqNhrBFtflznqroRUc/B7dUgy9t5HdUW/LGYQOYw=";
+    tag = "v${version}-stable";
+    hash = "sha256-q6FDgSwU3G41bVvdofsTBVG90xoqi+NP6zUg9geNz9I=";
   };
 
-  postPatch = ''
-    rm -rf dist
-  '';
-
-  build-system = [
-    poetry-core
-  ];
+  build-system = [ poetry-core ];
 
   dependencies = [
     aiohttp
     click
+    email-validator
     importlib-metadata
     jinja2
+    jsonschema
+    mcp
     openai
-    requests
+    pydantic
     python-dotenv
+    requests
     tiktoken
     tokenizers
   ];
 
-  passthru.optional-dependencies = {
+  optional-dependencies = {
     proxy = [
       apscheduler
       backoff
+      cryptography
       fastapi
       fastapi-sso
       gunicorn
@@ -77,6 +84,7 @@ buildPythonPackage rec {
       python-multipart
       pyyaml
       rq
+      uvloop
       uvicorn
     ];
     extra_proxy = [
@@ -84,23 +92,26 @@ buildPythonPackage rec {
       azure-keyvault-secrets
       google-cloud-kms
       prisma
+      pynacl
       resend
-      streamlit
     ];
   };
 
-  # the import check phase fails trying to do a network request to openai
-  # pythonImportsCheck = [ "litellm" ];
+  pythonImportsCheck = [ "litellm" ];
 
-  # no tests
+  # access network
   doCheck = false;
 
-  meta = with lib; {
+  passthru.tests = {
+    inherit (nixosTests) litellm;
+  };
+
+  meta = {
     description = "Use any LLM as a drop in replacement for gpt-3.5-turbo. Use Azure, OpenAI, Cohere, Anthropic, Ollama, VLLM, Sagemaker, HuggingFace, Replicate (100+ LLMs)";
     mainProgram = "litellm";
     homepage = "https://github.com/BerriAI/litellm";
-    changelog = "https://github.com/BerriAI/litellm/releases/tag/v${version}";
-    license = licenses.mit;
-    maintainers = with maintainers; [ happysalada ];
+    changelog = "https://github.com/BerriAI/litellm/releases/tag/${src.tag}";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ happysalada ];
   };
 }

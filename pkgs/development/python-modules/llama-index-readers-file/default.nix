@@ -1,19 +1,19 @@
-{ lib
-, beautifulsoup4
-, buildPythonPackage
-, fetchPypi
-, llama-index-core
-, poetry-core
-, pymupdf
-, pypdf
-, pythonOlder
-, pythonRelaxDepsHook
-, striprtf
+{
+  lib,
+  beautifulsoup4,
+  buildPythonPackage,
+  fetchPypi,
+  llama-index-core,
+  poetry-core,
+  pymupdf,
+  pypdf,
+  pythonOlder,
+  striprtf,
 }:
 
 buildPythonPackage rec {
   pname = "llama-index-readers-file";
-  version = "0.1.13";
+  version = "0.4.7";
   pyproject = true;
 
   disabled = pythonOlder "3.8";
@@ -21,22 +21,16 @@ buildPythonPackage rec {
   src = fetchPypi {
     pname = "llama_index_readers_file";
     inherit version;
-    hash = "sha256-gw8G7Hs0Q3/Du18mjSNcXHZAKWrbFI2Pkid9zrfwhG0=";
+    hash = "sha256-iadlI4oQavDx4xq41Ms+4zrIlwgChbzOWRAbQgJl69E=";
   };
 
   pythonRelaxDeps = [
     "pymupdf"
     "pypdf"
+    "striprtf"
   ];
 
-  pythonRemoveDeps = [
-    "bs4"
-  ];
-
-  build-system = [
-    poetry-core
-    pythonRelaxDepsHook
-  ];
+  build-system = [ poetry-core ];
 
   dependencies = [
     beautifulsoup4
@@ -49,9 +43,7 @@ buildPythonPackage rec {
   # Tests are only available in the mono repo
   doCheck = false;
 
-  pythonImportsCheck = [
-    "llama_index.readers.file"
-  ];
+  pythonImportsCheck = [ "llama_index.readers.file" ];
 
   meta = with lib; {
     description = "LlamaIndex Readers Integration for files";

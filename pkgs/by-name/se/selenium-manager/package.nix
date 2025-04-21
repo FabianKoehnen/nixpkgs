@@ -1,26 +1,32 @@
-{ lib
-, stdenv
-, fetchFromGitHub
-, rustPlatform
-, darwin
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  rustPlatform,
+  darwin,
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "selenium-manager";
-  version = "4.18.1";
+  version = "4.29.0";
 
   src = fetchFromGitHub {
     owner = "SeleniumHQ";
     repo = "selenium";
-    rev = "selenium-${version}";
-    hash = "sha256-1C9Epsk9rFlShxHGGzbWl6smrMzPn2h3yCWlzUIMpY8=";
+    tag = "selenium-${version}";
+    hash = "sha256-IyMXgYl/TPTpe/Y0pFyJVKj4Mp0xbkg1LSCNHzFL3bE=";
   };
 
   sourceRoot = "${src.name}/rust";
 
-  cargoHash = "sha256-BystESOFIitw3ER2K1TPOf5luOBvKXFuqc/unL93yRY=";
+  patches = [
+    ./disable-telemetry.patch
+  ];
 
-  buildInputs = lib.optionals stdenv.isDarwin [
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-MgnmEJif4Z4CcmBFkC5BJR67DMGm1ttObtl4LhAFw4g=";
+
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     darwin.apple_sdk.frameworks.SystemConfiguration
   ];
 
@@ -30,10 +36,10 @@ rustPlatform.buildRustPackage rec {
   doCheck = false;
 
   meta = with lib; {
-    description = "A browser automation framework and ecosystem";
+    description = "Browser automation framework and ecosystem";
     homepage = "https://github.com/SeleniumHQ/selenium";
     license = licenses.asl20;
-    maintainers = with maintainers; [ ];
+    maintainers = [ ];
     mainProgram = "selenium-manager";
     platforms = platforms.all;
   };

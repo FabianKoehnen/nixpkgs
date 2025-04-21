@@ -1,33 +1,37 @@
-{ lib
-, stdenv
-, fetchFromGitHub
-, Libsystem
-, SystemConfiguration
-, installShellFiles
-, libiconv
-, rustPlatform
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  Libsystem,
+  SystemConfiguration,
+  installShellFiles,
+  libiconv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "pueue";
-  version = "3.4.0";
+  version = "4.0.0";
 
   src = fetchFromGitHub {
     owner = "Nukesor";
     repo = "pueue";
     rev = "v${version}";
-    hash = "sha256-kKu/+F+zK0UyRHGkrZdD8alvsQTZFHhTqYK2phxo/ZA=";
+    hash = "sha256-TDxTj7VGzJzd6RWyVbe2ubpVS57bqq7OVvi23ZHmYDM=";
   };
 
-  cargoHash = "sha256-KwIGJiCGcFEKuloVtJr0GQxoFQVt/OHyJ/YCp4bCSGc=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-R94D9/J+Zl86Rb4+5O2Hp9GmcwnRt+0wJ56CHFoy/zg=";
 
-  nativeBuildInputs = [
-    installShellFiles
-  ] ++ lib.optionals stdenv.isDarwin [
-    rustPlatform.bindgenHook
-  ];
+  nativeBuildInputs =
+    [
+      installShellFiles
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      rustPlatform.bindgenHook
+    ];
 
-  buildInputs = lib.optionals stdenv.isDarwin [
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     Libsystem
     SystemConfiguration
     libiconv
@@ -48,7 +52,7 @@ rustPlatform.buildRustPackage rec {
 
   meta = with lib; {
     homepage = "https://github.com/Nukesor/pueue";
-    description = "A daemon for managing long running shell commands";
+    description = "Daemon for managing long running shell commands";
     longDescription = ''
       Pueue is a command-line task management tool for sequential and parallel
       execution of long-running tasks.
@@ -62,6 +66,6 @@ rustPlatform.buildRustPackage rec {
     '';
     changelog = "https://github.com/Nukesor/pueue/blob/v${version}/CHANGELOG.md";
     license = licenses.mit;
-    maintainers = with maintainers; [ marsam ];
+    maintainers = with maintainers; [ sarcasticadmin ];
   };
 }

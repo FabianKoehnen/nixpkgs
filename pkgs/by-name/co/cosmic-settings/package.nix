@@ -1,63 +1,74 @@
-{ lib
-, stdenv
-, fetchFromGitHub
-, rustPlatform
-, cmake
-, makeBinaryWrapper
-, cosmic-icons
-, cosmic-randr
-, just
-, pkg-config
-, libxkbcommon
-, libinput
-, fontconfig
-, freetype
-, wayland
-, expat
-, udev
-, util-linux
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  fetchpatch,
+  rustPlatform,
+  cmake,
+  just,
+  libcosmicAppHook,
+  pkg-config,
+  expat,
+  libinput,
+  fontconfig,
+  freetype,
+  pipewire,
+  pulseaudio,
+  udev,
+  util-linux,
+  cosmic-randr,
+  xkeyboard_config,
+  nix-update-script,
+  nixosTests,
 }:
-
-rustPlatform.buildRustPackage rec {
+let
+  libcosmicAppHook' = (libcosmicAppHook.__spliced.buildHost or libcosmicAppHook).override {
+    includeSettings = false;
+  };
+in
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cosmic-settings";
-  version = "0-unstable-2024-02-15";
+  version = "1.0.0-alpha.6";
 
   src = fetchFromGitHub {
     owner = "pop-os";
-    repo = pname;
-    rev = "82ee8a693cb2e1f727aa600f62a24d5de5d685d6";
-    hash = "sha256-OGei48Eu0kBXlWwGQaRZULAOnKyrDjCXV8OuWdOmv8E=";
+    repo = "cosmic-settings";
+    tag = "epoch-${finalAttrs.version}";
+    hash = "sha256-UKg3TIpyaqtynk6wLFFPpv69F74hmqfMVPra2+iFbvE=";
   };
 
-  cargoLock = {
-    lockFile = ./Cargo.lock;
-    outputHashes = {
-      "accesskit-0.12.2" = "sha256-ksaYMGT/oug7isQY8/1WD97XDUsX2ShBdabUzxWffYw=";
-      "atomicwrites-0.4.2" = "sha256-QZSuGPrJXh+svMeFWqAXoqZQxLq/WfIiamqvjJNVhxA=";
-      "cosmic-bg-config-0.1.0" = "sha256-2P2NcgDmytvBCMbG8isfZrX+JirMwAz8qjW3BhfhebI=";
-      "cosmic-comp-config-0.1.0" = "sha256-btXMVpgf6CKSXuUeNydreibgrRvBwiljYucaoch6RKs=";
-      "cosmic-config-0.1.0" = "sha256-QDcU9kVRHJmr8yuHq5C0RahQz0xBMkmDboW9Y2Tsk5s=";
-      "cosmic-client-toolkit-0.1.0" = "sha256-vj7Wm1uJ5ULvGNEwKznNhujCZQiuntsWMyKQbIVaO/Q=";
-      "cosmic-panel-config-0.1.0" = "sha256-gPQ5BsLvhnopnnGeKbUizmgk0yhEEgSD0etX9YEWc5E=";
-      "cosmic-randr-shell-0.1.0" = "sha256-t1PM/uIM+lbBwgFsKnRiqPZnlb4dxZnN72MfnW0HU/0=";
-      "cosmic-text-0.11.2" = "sha256-EG0jERREWR4MBWKgFmE/t6SpTTQRXK76PPa7+/TAKOA=";
-      "d3d12-0.19.0" = "sha256-usrxQXWLGJDjmIdw1LBXtBvX+CchZDvE8fHC0LjvhD4=";
-      "glyphon-0.5.0" = "sha256-j1HrbEpUBqazWqNfJhpyjWuxYAxkvbXzRKeSouUoPWg=";
-      "smithay-client-toolkit-0.18.0" = "sha256-2WbDKlSGiyVmi7blNBr2Aih9FfF2dq/bny57hoA4BrE=";
-      "softbuffer-0.4.1" = "sha256-a0bUFz6O8CWRweNt/OxTvflnPYwO5nm6vsyc/WcXyNg=";
-      "taffy-0.3.11" = "sha256-SCx9GEIJjWdoNVyq+RZAGn0N71qraKZxf9ZWhvyzLaI=";
-      "xdg-shell-wrapper-config-0.1.0" = "sha256-PfuybCDLeRcVCkVxFK2T9BnL2uJz7C4EEPDZ9cWlPqk=";
-    };
-  };
+  patches = [
+    # TODO: This is merged and will be included in the 7th Alpha release, remove it then.
+    (fetchpatch {
+      url = "https://github.com/pop-os/cosmic-settings/commit/2e2898b31fabcb3f3b561e6c4cea2aca9de9b284.patch";
+      hash = "sha256-ZGJlGmR6lZB697uQ+ZsjvisNbPKBlBdRK/Ti541ZdlE=";
+    })
+  ];
 
-  postPatch = ''
-    substituteInPlace justfile --replace '#!/usr/bin/env' "#!$(command -v env)"
-  '';
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-mf/Cw3/RLrCYgsk7JKCU2+oPn1VPbD+4JzkUmbd47m8=";
 
-  nativeBuildInputs = [ cmake just pkg-config makeBinaryWrapper ];
-  buildInputs = [ libxkbcommon libinput fontconfig freetype wayland expat udev util-linux ];
+  nativeBuildInputs = [
+    cmake
+    just
+    libcosmicAppHook'
+    pkg-config
+    rustPlatform.bindgenHook
+    util-linux
+  ];
+
+  buildInputs = [
+    expat
+    fontconfig
+    freetype
+    libinput
+    pipewire
+    pulseaudio
+    udev
+  ];
 
   dontUseJustBuild = true;
+  dontUseJustCheck = true;
 
   justFlags = [
     "--set"
@@ -68,18 +79,39 @@ rustPlatform.buildRustPackage rec {
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/cosmic-settings"
   ];
 
-  postInstall = ''
-    wrapProgram "$out/bin/cosmic-settings" \
-      --prefix PATH : ${lib.makeBinPath [ cosmic-randr ]} \
-      --suffix XDG_DATA_DIRS : "$out/share:${cosmic-icons}/share"
+  preFixup = ''
+    libcosmicAppWrapperArgs+=(
+      --prefix PATH : ${lib.makeBinPath [ cosmic-randr ]}
+      --set-default X11_BASE_RULES_XML ${xkeyboard_config}/share/X11/xkb/rules/base.xml
+      --set-default X11_BASE_EXTRA_RULES_XML ${xkeyboard_config}/share/X11/xkb/rules/extra.xml
+    )
   '';
 
-  meta = with lib; {
-    homepage = "https://github.com/pop-os/cosmic-settings";
-    description = "Settings for the COSMIC Desktop Environment";
-    license = licenses.gpl3Only;
-    maintainers = with maintainers; [ nyanbinary ];
-    platforms = platforms.linux;
-    mainProgram = "cosmic-settings";
+  passthru = {
+    tests = {
+      inherit (nixosTests)
+        cosmic
+        cosmic-autologin
+        cosmic-noxwayland
+        cosmic-autologin-noxwayland
+        ;
+    };
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--version"
+        "unstable"
+        "--version-regex"
+        "epoch-(.*)"
+      ];
+    };
   };
-}
+
+  meta = {
+    description = "Settings for the COSMIC Desktop Environment";
+    homepage = "https://github.com/pop-os/cosmic-settings";
+    license = lib.licenses.gpl3Only;
+    mainProgram = "cosmic-settings";
+    maintainers = lib.teams.cosmic.members;
+    platforms = lib.platforms.linux;
+  };
+})

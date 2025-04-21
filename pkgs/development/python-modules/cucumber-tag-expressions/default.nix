@@ -1,28 +1,31 @@
-{ lib
-, fetchFromGitHub
-, buildPythonPackage
-, pytestCheckHook
-, pytest-html
-, pyyaml
-, setuptools
- }:
+{
+  lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
+  pytest-html,
+  pyyaml,
+  setuptools,
+  setuptools-scm,
+}:
 
 buildPythonPackage rec {
   pname = "cucumber-tag-expressions";
-  version = "6.1.0";
+  version = "6.1.2";
   pyproject = true;
 
-  src = fetchFromGitHub{
+  src = fetchFromGitHub {
     owner = "cucumber";
     repo = "tag-expressions";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-etJKAOamCq63HsUqJMPBnmn0YFO3ZHOvs3/rDHN7YPU=";
+    tag = "v${version}";
+    hash = "sha256-ptDsN6loFXrKT1xeR138kXzA5TbHPH1G7I/25ZD8Nj4=";
   };
 
   sourceRoot = "${src.name}/python";
 
   build-system = [
     setuptools
+    setuptools-scm
   ];
 
   nativeCheckInputs = [

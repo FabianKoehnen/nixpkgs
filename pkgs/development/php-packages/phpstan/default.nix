@@ -1,18 +1,27 @@
-{ fetchFromGitHub, lib, php }:
+{
+  fetchFromGitHub,
+  lib,
+  php,
+  versionCheckHook,
+}:
 
-php.buildComposerProject (finalAttrs: {
+php.buildComposerProject2 (finalAttrs: {
   pname = "phpstan";
-  version = "1.10.66";
+  version = "2.1.11";
 
   src = fetchFromGitHub {
     owner = "phpstan";
     repo = "phpstan-src";
-    rev = finalAttrs.version;
-    hash = "sha256-ZEQ6oP6zyi0cL69J9ck8gAht5taPkzH+iW5ALC4saAQ=";
+    tag = finalAttrs.version;
+    hash = "sha256-K9XhLR5b3bPIt/6lyBxM6y7SgPZmvy9TvRpyohOwtDM=";
   };
 
-  vendorHash = "sha256-Qp/eMhcKK32N1EMgeIspBDs28Oofwn6n2bEFKqvSx9E=";
+  vendorHash = "sha256-I3v585gdcBzA24PavB9zBt2JfW1w7WdY94cxLnOjQxg=";
   composerStrictValidation = false;
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgramArg = "--version";
 
   meta = {
     changelog = "https://github.com/phpstan/phpstan/releases/tag/${finalAttrs.version}";

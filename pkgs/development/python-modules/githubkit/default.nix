@@ -1,46 +1,37 @@
-{ lib
-, anyio
-, buildPythonPackage
-, fetchFromGitHub
-, hishel
-, httpx
-, poetry-core
-, pydantic
-, pyjwt
-, pytest-xdist
-, pytestCheckHook
-, pythonOlder
-, pythonRelaxDepsHook
-, typing-extensions
+{
+  lib,
+  anyio,
+  buildPythonPackage,
+  fetchFromGitHub,
+  hishel,
+  httpx,
+  poetry-core,
+  pydantic,
+  pyjwt,
+  pytest-cov-stub,
+  pytest-xdist,
+  pytestCheckHook,
+  pythonOlder,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "githubkit";
-  version = "0.11.3";
+  version = "0.12.10";
   pyproject = true;
 
-  disabled = pythonOlder "3.8";
+  disabled = pythonOlder "3.9";
 
   src = fetchFromGitHub {
     owner = "yanyongyu";
     repo = "githubkit";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-GRuEzRqDfhLCanuQnCkMXmDnfNkLFb35Gixl9pWmA8w=";
+    tag = "v${version}";
+    hash = "sha256-nxJlC3+mHeUApqj1U5Qe3Q937BWD61U9fSXFfg4QNmA=";
   };
 
-  pythonRelaxDeps = [
-    "hishel"
-  ];
+  pythonRelaxDeps = [ "hishel" ];
 
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail "--cov=githubkit --cov-append --cov-report=term-missing" ""
-  '';
-
-  build-system = [
-    poetry-core
-    pythonRelaxDepsHook
-  ];
+  build-system = [ poetry-core ];
 
   dependencies = [
     hishel
@@ -49,20 +40,14 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  passthru.optional-dependencies = {
+  optional-dependencies = {
     all = [
       anyio
       pyjwt
     ];
-    jwt = [
-      pyjwt
-    ];
-    auth-app = [
-      pyjwt
-    ];
-    auth-oauth-device = [
-      anyio
-    ];
+    jwt = [ pyjwt ];
+    auth-app = [ pyjwt ];
+    auth-oauth-device = [ anyio ];
     auth = [
       anyio
       pyjwt
@@ -71,12 +56,11 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [
     pytestCheckHook
+    pytest-cov-stub
     pytest-xdist
-  ] ++ lib.flatten (builtins.attrValues passthru.optional-dependencies);
+  ] ++ lib.flatten (builtins.attrValues optional-dependencies);
 
-  pythonImportsCheck = [
-    "githubkit"
-  ];
+  pythonImportsCheck = [ "githubkit" ];
 
   disabledTests = [
     # Tests require network access
@@ -91,7 +75,7 @@ buildPythonPackage rec {
   meta = {
     description = "GitHub SDK for Python";
     homepage = "https://github.com/yanyongyu/githubkit";
-    changelog = "https://github.com/yanyongyu/githubkit/releases/tag/v${version}";
+    changelog = "https://github.com/yanyongyu/githubkit/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kranzes ];
   };

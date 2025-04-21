@@ -1,31 +1,36 @@
-{ lib
-, python3
-, fetchFromGitHub
+{
+  lib,
+  fetchFromGitHub,
+  python3,
 }:
 
+let
+  appthreat-vulnerability-db = (
+    python3.pkgs.appthreat-vulnerability-db.overrideAttrs (oldAttrs: rec {
+      version = "5.8.1";
+      src = oldAttrs.src.override {
+        tag = "v${version}";
+        hash = "sha256-/Yo0yyDp2vd9KJhy3LGRml55eqTiaHSSuSoe2h2bSw0=";
+      };
+    })
+  );
+
+in
 python3.pkgs.buildPythonApplication rec {
   pname = "dep-scan";
-  version = "5.2.14";
+  version = "5.5.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "owasp-dep-scan";
     repo = "dep-scan";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-G8i/tGEDgjPnIP04nrbx4HseiaU6N1GJGSg78yhaqII=";
+    tag = "v${version}";
+    hash = "sha256-lgqS8GY5JuHL3strNcb0B3mGieFkQTzGuRyV4dBp5e4=";
   };
 
-  postPatch = ''
-    substituteInPlace pytest.ini \
-      --replace-fail " --cov-append --cov-report term --cov depscan" ""
-    # Already fixed by upstream
-    substituteInPlace pyproject.toml \
-      --replace-fail "==5.6.4" ">=5.6.4"
-  '';
+  pythonRelaxDeps = [ "oras" ];
 
-  build-system = with python3.pkgs; [
-    setuptools
-  ];
+  build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
     appthreat-vulnerability-db
@@ -44,12 +49,11 @@ python3.pkgs.buildPythonApplication rec {
 
   nativeCheckInputs = with python3.pkgs; [
     httpretty
+    pytest-cov-stub
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [
-    "depscan"
-  ];
+  pythonImportsCheck = [ "depscan" ];
 
   preCheck = ''
     export HOME=$(mktemp -d)

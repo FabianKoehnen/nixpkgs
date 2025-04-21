@@ -1,17 +1,21 @@
-{ lib, buildGoModule, fetchFromGitHub }:
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
+}:
 
 buildGoModule rec {
   pname = "junos-czerwonk-exporter";
-  version = "0.12.2";
+  version = "0.14.1";
 
   src = fetchFromGitHub {
     owner = "czerwonk";
     repo = "junos_exporter";
     rev = version;
-    sha256 = "sha256-KdVyRddAr2gqiFyIGBfWbi4DHAaiey4p4OBFND/2u7U=";
+    sha256 = "sha256-PZKP8kcxU5ArC+bkYIO91Dg/f85T5qneX4wuKTj/jP4=";
   };
 
-  vendorHash = "sha256-fytDr56ZhhO5u6u9CRIEKXGqgnzntSVqEVItibpLyPM=";
+  vendorHash = "sha256-C2PvbvWJC6EGEKtg/roaG63YFdW9/ZYHulUdwC/2/MY=";
 
   meta = with lib; {
     description = "Exporter for metrics from devices running JunOS";

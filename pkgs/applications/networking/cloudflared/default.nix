@@ -1,19 +1,21 @@
-{ lib
-, stdenv
-, buildGoModule
-, fetchFromGitHub
-, callPackage
+{
+  lib,
+  stdenv,
+  buildGoModule,
+  fetchFromGitHub,
+  callPackage,
+  gitUpdater,
 }:
 
 buildGoModule rec {
   pname = "cloudflared";
-  version = "2024.3.0";
+  version = "2025.4.0";
 
   src = fetchFromGitHub {
     owner = "cloudflare";
     repo = "cloudflared";
-    rev = "refs/tags/${version}";
-    hash = "sha256-Fzi5g8bHBC5xao0iZ4I/SXLpEVaoUB+7UuQZhbfHw60=";
+    tag = version;
+    hash = "sha256-PKF7wP/ueLLhV8k3nMUm/c5fkg+7CwRf1oLnx0qbcA0=";
   };
 
   vendorHash = null;
@@ -68,9 +70,12 @@ buildGoModule rec {
       --replace "TestManagerCtxDoneCloseSessions" "SkipManagerCtxDoneCloseSessions"
   '';
 
-  doCheck = !stdenv.isDarwin;
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
-  passthru.tests.simple = callPackage ./tests.nix { inherit version; };
+  passthru = {
+    tests.simple = callPackage ./tests.nix { inherit version; };
+    updateScript = gitUpdater { };
+  };
 
   meta = with lib; {
     description = "Cloudflare Tunnel daemon, Cloudflare Access toolkit, and DNS-over-HTTPS client";
@@ -78,7 +83,14 @@ buildGoModule rec {
     changelog = "https://github.com/cloudflare/cloudflared/releases/tag/${version}";
     license = licenses.asl20;
     platforms = platforms.unix ++ platforms.windows;
-    maintainers = with maintainers; [ bbigras enorris thoughtpolice piperswe qjoly ];
+    maintainers = with maintainers; [
+      bbigras
+      enorris
+      thoughtpolice
+      piperswe
+      qjoly
+      wrbbz
+    ];
     mainProgram = "cloudflared";
   };
 }

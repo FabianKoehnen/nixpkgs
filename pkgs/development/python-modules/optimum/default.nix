@@ -1,51 +1,59 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, pythonOlder
-, coloredlogs
-, datasets
-, evaluate
-, h5py
-, huggingface-hub
-, numpy
-, onnx
-, onnxruntime
-, packaging
-, protobuf
-, sympy
-, tensorflow
-, tf2onnx
-, timm
-, torch
-, transformers
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  pythonOlder,
+
+  # build-system
+  setuptools,
+
+  # dependencies
+  datasets,
+  huggingface-hub,
+  numpy,
+  packaging,
+  torch,
+  transformers,
+
+  # optional-dependencies
+  diffusers,
+  evaluate,
+  h5py,
+  onnx,
+  onnxruntime,
+  protobuf,
+  tensorflow,
+  tf2onnx,
+  timm,
 }:
 
 buildPythonPackage rec {
   pname = "optimum";
-  version = "1.18.0";
-  format = "setuptools";
+  version = "1.24.0";
+  pyproject = true;
 
-  disabled = pythonOlder "3.7";
+  disabled = pythonOlder "3.9";
 
   src = fetchFromGitHub {
     owner = "huggingface";
     repo = "optimum";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-svNavPO/3ARqcBDpvaAdbbSqFpzgUY72vy2J1d4Bt90=";
+    tag = "v${version}";
+    hash = "sha256-0D/kHPUI+gM7IblA4ULs0JuGTNQVezIYg0SPD3ESukw=";
   };
 
-  propagatedBuildInputs = [
-    coloredlogs
-    datasets
+  build-system = [ setuptools ];
+
+  pythonRelaxDeps = [ "transformers" ];
+
+  dependencies = [
     huggingface-hub
     numpy
     packaging
-    sympy
     torch
     transformers
   ] ++ transformers.optional-dependencies.sentencepiece;
 
-  passthru.optional-dependencies = {
+  optional-dependencies = {
     onnxruntime = [
       onnx
       onnxruntime
@@ -67,9 +75,7 @@ buildPythonPackage rec {
       h5py
       numpy
     ];
-    diffusers = [
-      # diffusers
-    ];
+    diffusers = [ diffusers ];
     intel = [
       # optimum-intel
     ];
@@ -105,12 +111,12 @@ buildPythonPackage rec {
 
   pythonImportsCheck = [ "optimum" ];
 
-  meta = with lib; {
+  meta = {
     description = "Accelerate training and inference of 🤗 Transformers and 🤗 Diffusers with easy to use hardware optimization tools";
     mainProgram = "optimum-cli";
     homepage = "https://github.com/huggingface/optimum";
-    changelog = "https://github.com/huggingface/optimum/releases/tag/${src.rev}";
-    license = licenses.asl20;
-    maintainers = with maintainers; [ natsukium ];
+    changelog = "https://github.com/huggingface/optimum/releases/tag/${src.tag}";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ natsukium ];
   };
 }

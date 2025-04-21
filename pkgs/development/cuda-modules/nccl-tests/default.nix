@@ -25,14 +25,19 @@ in
 backendStdenv.mkDerivation (finalAttrs: {
 
   pname = "nccl-tests";
-  version = "2.13.9";
+  version = "2.14.1";
 
   src = fetchFromGitHub {
     owner = "NVIDIA";
-    repo = finalAttrs.pname;
+    repo = "nccl-tests";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-QYuMBPhvHHVo2ku14jD1CVINLPW0cyiXJkXxb77IxbE=";
+    hash = "sha256-PntD5seMq7s0x4hOO/wBDQdElhKCY6mFrTf073mf7zM=";
   };
+
+  postPatch = ''
+    # fix build failure with GCC14
+    substituteInPlace src/Makefile --replace-fail "-std=c++11" "-std=c++14"
+  '';
 
   strictDeps = true;
 
@@ -45,11 +50,11 @@ backendStdenv.mkDerivation (finalAttrs: {
     [ nccl ]
     ++ lib.optionals (lib.versionOlder cudaVersion "11.4") [ cudatoolkit ]
     ++ lib.optionals (lib.versionAtLeast cudaVersion "11.4") [
-      cuda_nvcc.dev # crt/host_config.h
+      cuda_nvcc # crt/host_config.h
       cuda_cudart
     ]
     ++ lib.optionals (lib.versionAtLeast cudaVersion "12.0") [
-      cuda_cccl.dev # <nv/target>
+      cuda_cccl # <nv/target>
     ]
     ++ lib.optionals mpiSupport [ mpi ];
 

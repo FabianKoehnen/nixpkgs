@@ -1,24 +1,25 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, pythonOlder
-, cmake
-, pkg-config
-, libpulsar
-, pybind11
-, certifi
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  pythonOlder,
+  cmake,
+  pkg-config,
+  libpulsar,
+  pybind11,
+  certifi,
 }:
 
 buildPythonPackage rec {
   pname = "pulsar";
-  version = "3.4.0";
+  version = "3.6.1";
   format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "apache";
     repo = "pulsar-client-python";
-    rev = "v${version}";
-    hash = "sha256-WcD88s8V4AT/juW0qmYHdtYzrS3hWeom/4r8TETlmFE=";
+    tag = "v${version}";
+    hash = "sha256-KdPLp0BmZnobU4F6tuMj2DY/ya4QHeGcM/eEAivoXNI=";
   };
 
   disabled = pythonOlder "3.7";
@@ -39,21 +40,17 @@ buildPythonPackage rec {
     cd ..
   '';
 
-  propagatedBuildInputs = [
-    certifi
-  ];
+  propagatedBuildInputs = [ certifi ];
 
   # Requires to setup a cluster
   doCheck = false;
 
-  pythonImportsCheck = [
-    "pulsar"
-  ];
+  pythonImportsCheck = [ "pulsar" ];
 
   meta = with lib; {
     description = "Apache Pulsar Python client library";
     homepage = "https://pulsar.apache.org/docs/next/client-libraries-python/";
-    changelog = "https://github.com/apache/pulsar-client-python/releases/tag/v${version}";
+    changelog = "https://github.com/apache/pulsar-client-python/releases/tag/${src.tag}";
     license = licenses.asl20;
     maintainers = with maintainers; [ gaelreyrol ];
   };

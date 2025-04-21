@@ -1,26 +1,48 @@
-{ lib, stdenv, fetchurl, pkg-config, bison, flex, libsepol, libselinux, bzip2, audit
-, enablePython ? true, swig ? null, python ? null
+{
+  lib,
+  stdenv,
+  fetchurl,
+  pkg-config,
+  bison,
+  flex,
+  libsepol,
+  libselinux,
+  bzip2,
+  audit,
+  enablePython ? true,
+  swig ? null,
+  python ? null,
 }:
-
-with lib;
 
 stdenv.mkDerivation rec {
   pname = "libsemanage";
-  version = "3.6";
+  version = "3.8.1";
   inherit (libsepol) se_url;
 
   src = fetchurl {
     url = "${se_url}/${version}/libsemanage-${version}.tar.gz";
-    sha256 = "sha256-QROPRiIkOeEkLyfBWH6Vz1SgWSWarxaB22QswwxODWA=";
-   };
+    sha256 = "sha256-ezkSeyGcxwv9k1pK9rDyuoPUs1yRbyU8fpQsI6tJDwc=";
+  };
 
-  outputs = [ "out" "dev" "man" ] ++ optional enablePython "py";
+  outputs = [
+    "out"
+    "dev"
+    "man"
+  ] ++ lib.optional enablePython "py";
 
   strictDeps = true;
 
-  nativeBuildInputs = [ bison flex pkg-config ] ++ optional enablePython swig;
-  buildInputs = [ libsepol libselinux bzip2 audit ]
-    ++ optional enablePython python;
+  nativeBuildInputs = [
+    bison
+    flex
+    pkg-config
+  ] ++ lib.optional enablePython swig;
+  buildInputs = [
+    libsepol
+    libselinux
+    bzip2
+    audit
+  ] ++ lib.optional enablePython python;
 
   makeFlags = [
     "PREFIX=$(out)"
@@ -43,11 +65,11 @@ stdenv.mkDerivation rec {
   # cc1: all warnings being treated as errors
   env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=clobbered" ];
 
-  installTargets = [ "install" ] ++ optionals enablePython [ "install-pywrap" ];
+  installTargets = [ "install" ] ++ lib.optionals enablePython [ "install-pywrap" ];
 
   enableParallelBuilding = true;
 
-  meta = removeAttrs libsepol.meta ["outputsToInstall"] // {
+  meta = removeAttrs libsepol.meta [ "outputsToInstall" ] // {
     description = "Policy management tools for SELinux";
     license = lib.licenses.lgpl21;
   };

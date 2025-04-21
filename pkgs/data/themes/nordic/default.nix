@@ -1,92 +1,99 @@
-{ lib
-, stdenvNoCC
-, fetchFromGitHub
-, gtk-engine-murrine
-, breeze-icons
-, plasma-framework
-, plasma-workspace
-, jdupes
+{
+  lib,
+  stdenvNoCC,
+  fetchFromGitHub,
+  breeze-icons,
+  gtk-engine-murrine,
+  jdupes,
+  plasma-framework,
+  plasma-workspace,
 }:
 
 stdenvNoCC.mkDerivation rec {
   pname = "nordic";
-  version = "2.2.0-unstable-2024-02-20";
+  version = "2.2.0-unstable-2025-03-21";
 
   srcs = [
     (fetchFromGitHub {
       owner = "EliverLara";
       repo = pname;
-      rev = "58d5a8e10ae068b98a63e6de2791e289f417842d";
-      hash = "sha256-Z3e7DoakK6f+UMBr78gZ+NJPb5vuJCfDgPRYywFDYeg=";
+      rev = "0b5c46f3454ec8b8f3a8acd41993b92ee44e4a62";
+      hash = "sha256-8BN1d/hsfkNWvdqsVyorRRZlj81/iAqJbONWIzy4iKw=";
       name = "Nordic";
     })
 
     (fetchFromGitHub {
       owner = "EliverLara";
       repo = pname;
-      rev = "cb7d95bd5438728f30f361a888dfb33b7f6ad28c";
-      hash = "sha256-ZWGmDiXjEt0UuALyw7cjTYgdw9kdJJKc0vkclbZkBvo=";
+      rev = "8713c00c38a9b5fe82199892edff7623033910a0";
+      hash = "sha256-v3jQF2wN55/7CtQu2jYQU11RdPKzdEzoXjDebyLg518=";
       name = "Nordic-standard-buttons";
     })
 
     (fetchFromGitHub {
       owner = "EliverLara";
       repo = pname;
-      rev = "37b86a30ad3e048f87a689f2813aa28644035fa8";
-      hash = "sha256-+O8+30H6humVQTwgFL3uQkeo5gPYrokpAKbT56PX6YQ=";
+      rev = "55f21590db56e9d68d95831cc1e98d9f08dcbf6b";
+      hash = "sha256-tnXeS8VffzUgPTtGbTVEX7IGSoihqeCHtKO5+EuYxaE=";
       name = "Nordic-darker";
     })
 
     (fetchFromGitHub {
       owner = "EliverLara";
       repo = pname;
-      rev = "926b215d14394ff043f2d2969e730759af7acd86";
-      hash = "sha256-yR0DfmUW1rr38Zbwtr7TUYL6z8vTNyoj0vEhphbZieU=";
+      rev = "8976bf0bd88b6604c6d88a504ef66537997e1167";
+      hash = "sha256-uz/gPELRABT6PoHSihN3lC25KswaQt7xyVfm3Ux7F5U=";
       name = "Nordic-darker-standard-buttons";
     })
 
     (fetchFromGitHub {
       owner = "EliverLara";
       repo = pname;
-      rev = "1ae59d40ba8342fc14f3a55a2fb37446a8d10880";
-      hash = "sha256-tFIXPP5Ohw8atNIqvMtB7sLka+/tw+aSbjMdzKfI9r0=";
+      rev = "d02b961b754c2b5144dbb5a4ac52fca149b44d5f";
+      hash = "sha256-xncXYKfocuv6AOmG8XX1/ahcERYGRRU8d0b7zJmhz5Q=";
       name = "Nordic-bluish-accent";
     })
 
     (fetchFromGitHub {
       owner = "EliverLara";
       repo = pname;
-      rev = "aaaa5dab0517f182a85a75d457da70d22e577b26";
-      hash = "sha256-J/nti2jxQ0VfTbp5WfrE0CN6Pvfg1edplL6/QPKUBzc=";
+      rev = "40c954e0134ad77113cec4d83e8381a55b735e34";
+      hash = "sha256-qRL/o11bQ2RQgJq9nmrr+HFZKoEhASvxr1R4tra2BwA=";
       name = "Nordic-bluish-accent-standard-buttons";
     })
 
     (fetchFromGitHub {
       owner = "EliverLara";
       repo = "${pname}-polar";
-      rev = "733d5ea57c6ecd8209ec0a928029e28b3f54f83d";
-      hash = "sha256-y3ge0DF0SdKFjH+mZdHDpK3YG7Ng3rN0y0Er2WBC6Sc=";
+      rev = "6f32e3708355fbf9ac04342361134a2d45b4ce5d";
+      hash = "sha256-j70j0WqGzzkvNTVrkg0Zz+wVrs3/JdPVO8gliUSXRnc=";
       name = "Nordic-Polar";
     })
 
     (fetchFromGitHub {
       owner = "EliverLara";
       repo = "${pname}-polar";
-      rev = "667dfe4f6e8157f30a4e0ea5dc1d17438520d6cf";
-      hash = "sha256-p7bY1r8Ik+jsIyjR75UFHw8XuiGz5LmT09txBLyZpx4=";
+      rev = "ca23b9460713e72defae777162175921beae6e27";
+      hash = "sha256-wkmmpviQBGoE/+/tPTIIgkWFUYtYney5Yz12m8Zlak8=";
       name = "Nordic-Polar-standard-buttons";
     })
   ];
 
   sourceRoot = ".";
 
-  outputs = [ "out" "sddm" ];
+  outputs = [
+    "out"
+    "sddm"
+  ];
 
   nativeBuildInputs = [ jdupes ];
 
   propagatedUserEnvPkgs = [ gtk-engine-murrine ];
 
   dontWrapQtApps = true;
+
+  # FIXME: https://github.com/EliverLara/Nordic/issues/331
+  dontCheckForBrokenSymlinks = true;
 
   installPhase = ''
     runHook preInstall
@@ -127,7 +134,8 @@ stdenvNoCC.mkDerivation rec {
     mv -v $out/share/themes/Nordic/kde/cursors/*-cursors $out/share/icons/
 
     rm -rf $out/share/plasma/look-and-feel/*/contents/{logout,osd,components}
-    rm -rf $out/share/plasma/desktoptheme/*/contents/{{defaults,splash,previews}
+    rm -rf $out/share/plasma/desktoptheme/*/contents/{defaults,splash,previews}
+    rm -rf $out/share/Kvantum/*.tar.xz
 
     mkdir -p $sddm/share/sddm/themes
     mv -v $out/share/themes/Nordic/kde/sddm/* $sddm/share/sddm/themes/
@@ -151,11 +159,11 @@ stdenvNoCC.mkDerivation rec {
       >> $sddm/nix-support/propagated-user-env-packages
   '';
 
-  meta = with lib; {
+  meta = {
     description = "Gtk and KDE themes using the Nord color pallete";
     homepage = "https://github.com/EliverLara/Nordic";
-    license = licenses.gpl3Only;
-    platforms = platforms.all;
-    maintainers = [ maintainers.romildo ];
+    license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.all;
+    maintainers = [ lib.maintainers.romildo ];
   };
 }

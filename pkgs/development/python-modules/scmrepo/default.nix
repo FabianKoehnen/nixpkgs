@@ -1,34 +1,34 @@
-{ lib
-, asyncssh
-, buildPythonPackage
-, dulwich
-, dvc-http
-, dvc-objects
-, fetchFromGitHub
-, fsspec
-, funcy
-, gitpython
-, pathspec
-, pygit2
-, pygtrie
-, pythonOlder
-, setuptools
-, setuptools-scm
-, shortuuid
+{
+  lib,
+  aiohttp-retry,
+  asyncssh,
+  buildPythonPackage,
+  dulwich,
+  fetchFromGitHub,
+  fsspec,
+  funcy,
+  gitpython,
+  pathspec,
+  pygit2,
+  pygtrie,
+  pythonOlder,
+  setuptools,
+  setuptools-scm,
+  tqdm,
 }:
 
 buildPythonPackage rec {
   pname = "scmrepo";
-  version = "3.3.1";
+  version = "3.3.10";
   pyproject = true;
 
-  disabled = pythonOlder "3.7";
+  disabled = pythonOlder "3.9";
 
   src = fetchFromGitHub {
     owner = "iterative";
     repo = "scmrepo";
-    rev = "refs/tags/${version}";
-    hash = "sha256-swv5uWsyM4mEXlurizUewnbdAOtjWgvzCO9IPfz2ZPE=";
+    tag = version;
+    hash = "sha256-BiLxILHbq5Q8iIE2yMBNlnqqFMoRe9z+Bn/FMaA7gtI=";
   };
 
   build-system = [
@@ -37,25 +37,22 @@ buildPythonPackage rec {
   ];
 
   dependencies = [
+    aiohttp-retry
     asyncssh
     dulwich
-    dvc-http
-    dvc-objects
     fsspec
     funcy
     gitpython
     pathspec
     pygit2
     pygtrie
-    shortuuid
+    tqdm
   ];
 
   # Requires a running Docker instance
   doCheck = false;
 
-  pythonImportsCheck = [
-    "scmrepo"
-  ];
+  pythonImportsCheck = [ "scmrepo" ];
 
   meta = with lib; {
     description = "SCM wrapper and fsspec filesystem";

@@ -1,10 +1,11 @@
-{ lib
-, fetchFromSourcehut
-, pythonPackages
-, wrapGAppsHook
+{
+  lib,
+  fetchFromSourcehut,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 
-pythonPackages.buildPythonApplication rec {
+python3Packages.buildPythonApplication rec {
   pname = "mymcplus";
   version = "3.0.5";
 
@@ -16,19 +17,19 @@ pythonPackages.buildPythonApplication rec {
   };
 
   nativeBuildInputs = [
-    wrapGAppsHook
+    wrapGAppsHook3
   ];
 
-  propagatedBuildInputs = with pythonPackages; [
+  propagatedBuildInputs = with python3Packages; [
     pyopengl
     wxpython
   ];
 
   meta = with lib; {
     homepage = "https://git.sr.ht/~thestr4ng3r/mymcplus";
-    description = "A PlayStation 2 memory card manager";
+    description = "PlayStation 2 memory card manager";
     mainProgram = "mymcplus";
     license = licenses.gpl3Plus;
-    maintainers = with maintainers; [ ];
+    maintainers = [ ];
   };
 }

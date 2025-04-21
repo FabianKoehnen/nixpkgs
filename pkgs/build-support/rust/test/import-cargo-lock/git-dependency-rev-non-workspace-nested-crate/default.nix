@@ -1,10 +1,25 @@
-{ rustPlatform, pkg-config, openssl, lib, darwin, stdenv }:
-
+{
+  rustPlatform,
+  pkg-config,
+  openssl,
+  zlib,
+  lib,
+}:
+let
+  fs = lib.fileset;
+in
 rustPlatform.buildRustPackage {
   pname = "git-dependency-rev-non-workspace-nested-crate";
   version = "0.1.0";
 
-  src = ./.;
+  src = fs.toSource {
+    root = ./.;
+    fileset = fs.unions [
+      ./Cargo.toml
+      ./Cargo.lock
+      ./src
+    ];
+  };
 
   nativeBuildInputs = [
     pkg-config
@@ -12,8 +27,7 @@ rustPlatform.buildRustPackage {
 
   buildInputs = [
     openssl
-  ] ++ lib.optionals stdenv.isDarwin [
-    darwin.apple_sdk.frameworks.Security
+    zlib
   ];
 
   cargoLock = {

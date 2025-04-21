@@ -1,6 +1,11 @@
-{ lib, buildPythonPackage, fetchFromGitHub, cmigemo }:
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  cmigemo,
+}:
 
-buildPythonPackage rec {
+buildPythonPackage {
   pname = "percol";
   version = "unstable-2019-07-24";
   format = "setuptools";

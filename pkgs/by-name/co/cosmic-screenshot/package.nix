@@ -1,25 +1,31 @@
-{ lib
-, stdenv
-, fetchFromGitHub
-, rustPlatform
-, just
-, pkg-config
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  rustPlatform,
+  just,
+  pkg-config,
+  nixosTests,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cosmic-screenshot";
-  version = "unstable-2023-11-08";
+  version = "1.0.0-alpha.6";
 
   src = fetchFromGitHub {
     owner = "pop-os";
-    repo = pname;
-    rev = "b413a7128ddcdfb3c63e84bdade5c5b90b163a9a";
-    hash = "sha256-SDxBBhmnqNDX95Rb7QiI46sAxrfodB5tSq8AbXAU480=";
+    repo = "cosmic-screenshot";
+    tag = "epoch-${finalAttrs.version}";
+    hash = "sha256-/sGYF+XWmPraNGlBVUcN/nokDB9JwWViEAL9gVH3ZaI=";
   };
 
-  cargoHash = "sha256-ZRsAhIWPm38Ys9jM/3yVJLW818lUGLCcSfFZb+UTbnU=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-1r0Uwcf4kpHCgWqrUYZELsVXGDzbtbmu/WFeX53fBiQ=";
 
-  nativeBuildInputs = [ just pkg-config ];
+  nativeBuildInputs = [
+    just
+    pkg-config
+  ];
 
   dontUseJustBuild = true;
 
@@ -32,12 +38,21 @@ rustPlatform.buildRustPackage rec {
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/cosmic-screenshot"
   ];
 
+  passthru.tests = {
+    inherit (nixosTests)
+      cosmic
+      cosmic-autologin
+      cosmic-noxwayland
+      cosmic-autologin-noxwayland
+      ;
+  };
+
   meta = with lib; {
     homepage = "https://github.com/pop-os/cosmic-screenshot";
     description = "Screenshot tool for the COSMIC Desktop Environment";
     license = licenses.gpl3Only;
-    maintainers = with maintainers; [ nyanbinary ];
+    maintainers = teams.cosmic.members;
     platforms = platforms.linux;
     mainProgram = "cosmic-screenshot";
   };
-}
+})

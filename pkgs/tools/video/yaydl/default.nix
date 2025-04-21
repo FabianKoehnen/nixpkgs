@@ -1,34 +1,35 @@
-{ lib
-, stdenv
-, rustPlatform
-, fetchFromGitHub
-, pkg-config
-, makeWrapper
-, openssl
-, ffmpeg
-, Security
+{
+  lib,
+  stdenv,
+  rustPlatform,
+  fetchFromGitHub,
+  pkg-config,
+  makeWrapper,
+  openssl,
+  ffmpeg,
+  Security,
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "yaydl";
-  version = "0.14.0";
+  version = "0.17.2";
 
   src = fetchFromGitHub {
     owner = "dertuxmalwieder";
     repo = pname;
     rev = "release-${version}";
-    sha256 = "sha256-r0Z/dihDaiW/lBLMftLtzLELpKT2twqru1xxI9LnjU8=";
+    sha256 = "sha256-r+UkwEtuGL6los9ohv86KA/3qsaEkpnI4yV/UnYelgk=";
   };
 
-  cargoHash = "sha256-FkOiMeNwYj++gZ1Kl4RZHmsRDVMZQBEYtRpogK6XSFE=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-pljSw8iQFV6ymg2GKwI+P7R4jvysyFFC1EM25Wi8Los=";
 
   nativeBuildInputs = [
     pkg-config
     makeWrapper
   ];
 
-  buildInputs = [ openssl ]
-    ++ lib.optional stdenv.isDarwin Security;
+  buildInputs = [ openssl ] ++ lib.optional stdenv.hostPlatform.isDarwin Security;
 
   postInstall = ''
     wrapProgram $out/bin/yaydl \
@@ -39,7 +40,7 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://code.rosaelefanten.org/yaydl";
     description = "Yet another youtube down loader";
     license = licenses.cddl;
-    maintainers = with maintainers; [];
+    maintainers = [ ];
     mainProgram = "yaydl";
   };
 }

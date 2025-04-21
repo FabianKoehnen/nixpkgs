@@ -1,4 +1,11 @@
-{ fetchFromGitHub, buildGoModule, jq, buildNpmPackage, lib, makeWrapper }:
+{
+  fetchFromGitHub,
+  buildGoModule,
+  jq,
+  buildNpmPackage,
+  lib,
+  makeWrapper,
+}:
 
 let
   version = "0.13.2";
@@ -26,7 +33,7 @@ let
     '';
   };
 in
-buildGoModule rec {
+buildGoModule {
   pname = "memos";
   inherit version src;
 
@@ -46,7 +53,7 @@ buildGoModule rec {
 
   meta = with lib; {
     homepage = "https://usememos.com";
-    description = "A lightweight, self-hosted memo hub";
+    description = "Lightweight, self-hosted memo hub";
     maintainers = with maintainers; [ indexyz ];
     license = licenses.mit;
     mainProgram = "memos";

@@ -1,55 +1,62 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, hatch-jupyter-builder
-, hatchling
-, async-lru
-, httpx
-, packaging
-, tornado
-, ipykernel
-, jupyter-core
-, jupyter-lsp
-, jupyterlab-server
-, jupyter-server
-, notebook-shim
-, jinja2
-, tomli
-, pythonOlder
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  hatch-jupyter-builder,
+  hatchling,
+  async-lru,
+  httpx,
+  importlib-metadata,
+  ipykernel,
+  jinja2,
+  jupyter-core,
+  jupyter-lsp,
+  jupyter-server,
+  jupyterlab-server,
+  notebook-shim,
+  packaging,
+  setuptools,
+  tomli,
+  tornado,
+  traitlets,
+  pythonOlder,
 }:
 
 buildPythonPackage rec {
   pname = "jupyterlab";
-  version = "4.1.5";
+  version = "4.3.6";
   pyproject = true;
 
   disabled = pythonOlder "3.8";
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-ya11KQyxC/r/NiS/P7uFIxm0zOTEVmE/jruqmNA1JNs=";
+    hash = "sha256-KQD/2/yp7TfErX/do+t2WC/ZRdRpYq86xkdBri1rL/Q=";
   };
 
-  nativeBuildInputs = [
+  build-system = [
     hatch-jupyter-builder
     hatchling
   ];
 
-  propagatedBuildInputs = [
-    async-lru
-    httpx
-    packaging
-    tornado
-    ipykernel
-    jupyter-core
-    jupyter-lsp
-    jupyterlab-server
-    jupyter-server
-    notebook-shim
-    jinja2
-  ] ++ lib.optionals (pythonOlder "3.11") [
-    tomli
-  ];
+  dependencies =
+    [
+      async-lru
+      httpx
+      ipykernel
+      jinja2
+      jupyter-core
+      jupyter-lsp
+      jupyter-server
+      jupyterlab-server
+      notebook-shim
+      packaging
+      setuptools
+      tornado
+      traitlets
+    ]
+    ++ lib.optionals (pythonOlder "3.11") [ tomli ]
+    ++ lib.optionals (pythonOlder "3.10") [ importlib-metadata ];
 
   makeWrapperArgs = [
     "--set"
@@ -60,9 +67,7 @@ buildPythonPackage rec {
   # Depends on npm
   doCheck = false;
 
-  pythonImportsCheck = [
-    "jupyterlab"
-  ];
+  pythonImportsCheck = [ "jupyterlab" ];
 
   meta = with lib; {
     changelog = "https://github.com/jupyterlab/jupyterlab/blob/v${version}/CHANGELOG.md";

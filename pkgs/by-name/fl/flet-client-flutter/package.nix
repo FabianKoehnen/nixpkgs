@@ -1,33 +1,43 @@
-{ lib
-, fetchFromGitHub
-, pkg-config
-, flutter
-, gst_all_1
-, libunwind
-, makeWrapper
-, mimalloc
-, orc
-, nix-update-script
-, mpv-unwrapped
-, libplacebo
+{
+  lib,
+  fetchFromGitHub,
+  pkg-config,
+  flutter327,
+  gst_all_1,
+  libunwind,
+  makeWrapper,
+  mimalloc,
+  orc,
+  python3,
+  nix,
+  gitUpdater,
+  nix-prefetch-git,
+  mpv-unwrapped,
+  libplacebo,
+  _experimental-update-script-combinators,
+  fletTarget ? "linux",
 }:
 
-flutter.buildFlutterApplication rec {
+flutter327.buildFlutterApplication rec {
   pname = "flet-client-flutter";
-  version = "0.21.1";
+  version = "0.27.6";
 
   src = fetchFromGitHub {
     owner = "flet-dev";
     repo = "flet";
-    rev = "v${version}";
-    hash = "sha256-7zAcjek4iZRsNRVA85KBtU7PGbnLDZjnEO8Q5xwBiwM=";
+    tag = "v${version}";
+    hash = "sha256-ZtIAfLdj9209ZzgmNzTHMyzCTohxYK0Va4M8NYyie64=";
   };
 
   sourceRoot = "${src.name}/client";
 
+  gitHashes = lib.importJSON ./git_hashes.json;
+
   cmakeFlags = [
     "-DMIMALLOC_LIB=${mimalloc}/lib/mimalloc.o"
   ];
+
+  targetFlutterPlatform = fletTarget;
 
   pubspecLock = lib.importJSON ./pubspec.lock.json;
 
@@ -37,28 +47,50 @@ flutter.buildFlutterApplication rec {
     pkg-config
   ];
 
-  buildInputs = [
-    mpv-unwrapped
-    gst_all_1.gst-libav
-    gst_all_1.gst-plugins-base
-    gst_all_1.gst-vaapi
-    gst_all_1.gstreamer
-    libunwind
-    orc
-    mimalloc
-  ]
+  buildInputs =
+    [
+      mpv-unwrapped
+      gst_all_1.gst-libav
+      gst_all_1.gst-plugins-base
+      gst_all_1.gst-vaapi
+      gst_all_1.gstreamer
+      libunwind
+      orc
+      mimalloc
+    ]
     ++ mpv-unwrapped.buildInputs
-    ++ libplacebo.buildInputs
-  ;
+    ++ libplacebo.buildInputs;
 
-  passthru.updateScript = nix-update-script { };
+  passthru = {
+    updateScript = _experimental-update-script-combinators.sequence [
+      (gitUpdater { rev-prefix = "v"; })
+      {
+        command = [
+          "env"
+          "PATH=${
+            lib.makeBinPath [
+              (python3.withPackages (p: [ p.pyyaml ]))
+              nix-prefetch-git
+              nix
+            ]
+          }"
+          "python3"
+          ./update-lockfiles.py
+        ];
+        supportedFeatures = [ "silent" ];
+      }
+    ];
+  };
 
   meta = {
-    description = "A framework that enables you to easily build realtime web, mobile, and desktop apps in Python. The frontend part";
+    description = "Framework that enables you to easily build realtime web, mobile, and desktop apps in Python. The frontend part";
     homepage = "https://flet.dev/";
     changelog = "https://github.com/flet-dev/flet/releases/tag/v${version}";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ heyimnova lucasew ];
+    maintainers = with lib.maintainers; [
+      heyimnova
+      lucasew
+    ];
     mainProgram = "flet";
   };
 }

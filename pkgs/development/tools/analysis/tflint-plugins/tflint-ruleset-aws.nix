@@ -1,20 +1,21 @@
-{ lib
-, buildGoModule
-, fetchFromGitHub
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
 }:
 
 buildGoModule rec {
   pname = "tflint-ruleset-aws";
-  version = "0.30.0";
+  version = "0.37.0";
 
   src = fetchFromGitHub {
     owner = "terraform-linters";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-mgYvzxIzh/HibPM+BQoJ7dKqEifMcuoqfOIZU4KcRC4=";
+    hash = "sha256-7xS1V7Ec3eWiVjMB/4MLeKlGxNKRYeHVFc61dpoBU/8=";
   };
 
-  vendorHash = "sha256-JaOVNWF4JMXwGo+JVyknGZrd/M6F9c2PTgGadCqoRsk=";
+  vendorHash = "sha256-XUGcRky0GMV2RSahUk6k/KWkWvxdCLi/7TpXn2MdNoM=";
 
   # upstream Makefile also does a  go test $(go list ./... | grep -v integration)
   preCheck = ''

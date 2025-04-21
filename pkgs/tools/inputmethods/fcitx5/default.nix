@@ -1,39 +1,41 @@
-{ lib
-, stdenv
-, fetchurl
-, fetchFromGitHub
-, fetchpatch
-, pkg-config
-, cmake
-, extra-cmake-modules
-, cairo
-, pango
-, expat
-, fribidi
-, fmt
-, wayland
-, systemd
-, wayland-protocols
-, json_c
-, isocodes
-, xkeyboard_config
-, enchant
-, gdk-pixbuf
-, libGL
-, libuuid
-, libselinux
-, libXdmcp
-, libsepol
-, libxkbcommon
-, libthai
-, libdatrie
-, xcbutilkeysyms
-, pcre
-, xcbutil
-, xcbutilwm
-, xcb-imdkit
-, libxkbfile
-, nixosTests
+{
+  lib,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
+  pkg-config,
+  cmake,
+  extra-cmake-modules,
+  wayland-scanner,
+  cairo,
+  pango,
+  expat,
+  fribidi,
+  fmt,
+  wayland,
+  systemd,
+  wayland-protocols,
+  json_c,
+  isocodes,
+  xkeyboard_config,
+  enchant,
+  gdk-pixbuf,
+  libGL,
+  libuuid,
+  libselinux,
+  libXdmcp,
+  libsepol,
+  libxkbcommon,
+  libthai,
+  libdatrie,
+  xcbutilkeysyms,
+  pcre,
+  xcbutil,
+  xcbutilwm,
+  xcb-imdkit,
+  libxkbfile,
+  nixosTests,
+  gettext,
 }:
 let
   enDictVer = "20121020";
@@ -44,13 +46,13 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "fcitx5";
-  version = "5.1.8";
+  version = "5.1.12";
 
   src = fetchFromGitHub {
     owner = "fcitx";
     repo = pname;
     rev = version;
-    hash = "sha256-MeknggrpOzpkT1EXZCftIrlevuMEEHM5d8vszKRp+DI=";
+    hash = "sha256-Jk7YY6nrY1Yn9KeNlRJbMF/fCMIlUVg/Elt7SymlK84=";
   };
 
   prePatch = ''
@@ -61,9 +63,12 @@ stdenv.mkDerivation rec {
     cmake
     extra-cmake-modules
     pkg-config
+    wayland-scanner
+    gettext
   ];
 
   buildInputs = [
+    extra-cmake-modules # required to please CMake
     expat
     fmt
     isocodes
@@ -93,6 +98,8 @@ stdenv.mkDerivation rec {
     libxkbfile
   ];
 
+  strictDeps = true;
+
   passthru = {
     updateScript = ./update.py;
     tests = {
@@ -104,6 +111,7 @@ stdenv.mkDerivation rec {
     description = "Next generation of fcitx";
     homepage = "https://github.com/fcitx/fcitx5";
     license = licenses.lgpl21Plus;
+    mainProgram = "fcitx5";
     maintainers = with maintainers; [ poscat ];
     platforms = platforms.linux;
   };

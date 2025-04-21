@@ -1,47 +1,51 @@
-{ lib
-, fetchFromGitHub
-, rustPlatform
-, libsixel
-, testers
-, presenterm
-, stdenv
+{
+  lib,
+  rustPlatform,
+  fetchFromGitHub,
+  libsixel,
+  versionCheckHook,
+  nix-update-script,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "presenterm";
-  version = "0.7.0";
+  version = "0.12.0";
 
   src = fetchFromGitHub {
     owner = "mfontanini";
     repo = "presenterm";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-I5L+Wygj9ApQu/5fm55okwNbyxOiF++7BDl765MLnjY=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-2k1YCzRoXt5Nmn+HH2qkdpP3S3+PJ5OVSVx29nYSdF8=";
   };
 
   buildInputs = [
     libsixel
   ];
 
-  cargoHash = "sha256-w1uXCH8Ybf78EPTIKrhPlPHAnNBp1iiBpFJHY98IPWY=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-M9VcwfG6NwUIvOkZKdoh97GVJEivkEmXhlApGQ1Hqds=";
 
-  # Crashes at runtime on darwin with:
-  # Library not loaded: .../out/lib/libsixel.1.dylib
-  buildFeatures = lib.optionals (!stdenv.isDarwin) [ "sixel" ];
+  checkFlags = [
+    # failed to load .tmpEeeeaQ: No such file or directory (os error 2)
+    "--skip=external_snippet"
+  ];
 
-  # Skip test that currently doesn't work
-  checkFlags = [ "--skip=execute::test::shell_code_execution" ];
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+  versionCheckProgramArg = "--version";
+  doInstallCheck = true;
 
-  passthru.tests.version = testers.testVersion {
-    package = presenterm;
-    command = "presenterm --version";
+  passthru = {
+    updateScript = nix-update-script { };
   };
 
-  meta = with lib; {
-    description = "A terminal based slideshow tool";
-    changelog = "https://github.com/mfontanini/presenterm/releases/tag/v${version}";
+  meta = {
+    description = "Terminal based slideshow tool";
+    changelog = "https://github.com/mfontanini/presenterm/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/mfontanini/presenterm";
-    license = licenses.bsd2;
-    maintainers = with maintainers; [ mikaelfangel ];
+    license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ mikaelfangel ];
     mainProgram = "presenterm";
   };
-}
+})

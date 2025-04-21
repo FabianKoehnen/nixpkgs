@@ -1,12 +1,15 @@
-{ lib, stdenv, fetchFromGitHub
-, IOKit
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  IOKit,
 }:
 
 stdenv.mkDerivation rec {
   pname = "osx-cpu-temp";
   version = "unstable-2020-12-04";
 
-  src = fetchFromGitHub rec {
+  src = fetchFromGitHub {
     name = "osx-cpu-temp-source";
     owner = "lavoiesl";
     repo = pname;
@@ -22,9 +25,9 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with lib; {
-    description = "Outputs current CPU temperature for OSX.";
+    description = "Outputs current CPU temperature for OSX";
     homepage = "https://github.com/lavoiesl/osx-cpu-temp";
-    license = licenses.gpl2;
+    license = licenses.gpl2Plus;
     maintainers = with maintainers; [ virusdave ];
     platforms = platforms.darwin;
   };

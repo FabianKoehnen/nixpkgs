@@ -1,34 +1,33 @@
-{ lib
-, fetchPypi
-, buildPythonApplication
-, pythonRelaxDepsHook
-, poetry-core
-, colorama
-, packaging
-, pydantic
-, requests
-, pygobject3
-, tqdm
-, gobject-introspection
-, wrapGAppsNoGuiHook
+{
+  lib,
+  fetchPypi,
+  buildPythonApplication,
+  poetry-core,
+  colorama,
+  packaging,
+  pydantic,
+  requests,
+  pygobject3,
+  tqdm,
+  gobject-introspection,
+  wrapGAppsNoGuiHook,
 }:
 
 buildPythonApplication rec {
   pname = "gnome-extensions-cli";
-  version = "0.10.1";
+  version = "0.10.5";
   format = "pyproject";
 
   src = fetchPypi {
     pname = "gnome_extensions_cli";
     inherit version;
-    hash = "sha256-yAoo3NjNtTZSHmbLKzW2X7Cy2smLNp8/9vo+OPGxlVY=";
+    hash = "sha256-Rli4gsxbD84SSyx6hdPz5MKHsYw4jX7XgAkAydg0lGI=";
   };
 
   nativeBuildInputs = [
     gobject-introspection
     poetry-core
     wrapGAppsNoGuiHook
-    pythonRelaxDepsHook
   ];
 
   pythonRelaxDeps = [

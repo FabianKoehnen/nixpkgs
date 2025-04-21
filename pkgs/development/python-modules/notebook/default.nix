@@ -1,29 +1,29 @@
-{ stdenv
-, lib
-, buildPythonPackage
-, pythonOlder
-, fetchPypi
-, hatch-jupyter-builder
-, hatchling
-, jupyter-server
-, jupyterlab
-, jupyterlab-server
-, notebook-shim
-, tornado
-, pytest-jupyter
-, pytestCheckHook
+{
+  lib,
+  buildPythonPackage,
+  pythonOlder,
+  fetchPypi,
+  hatch-jupyter-builder,
+  hatchling,
+  jupyter-server,
+  jupyterlab,
+  jupyterlab-server,
+  notebook-shim,
+  tornado,
+  pytest-jupyter,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "notebook";
-  version = "7.1.2";
-  disabled = pythonOlder "3.8";
+  version = "7.3.3";
+  pyproject = true;
 
-  format = "pyproject";
+  disabled = pythonOlder "3.9";
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-78LIAEOQng+qF/zp6bN8BZwDrw7Jmk1NuEyyHZ0uk2o=";
+    hash = "sha256-cHoxP7iC01+SGYnrPSBN6ULtUTKkTkqh/g6PJLudwl0=";
   };
 
   postPatch = ''
@@ -31,13 +31,13 @@ buildPythonPackage rec {
       --replace "timeout = 300" ""
   '';
 
-  nativeBuildInputs = [
+  build-system = [
     hatch-jupyter-builder
     hatchling
     jupyterlab
   ];
 
-  propagatedBuildInputs = [
+  dependencies = [
     jupyter-server
     jupyterlab
     jupyterlab-server
@@ -51,7 +51,8 @@ buildPythonPackage rec {
   ];
 
   pytestFlagsArray = [
-    "-W" "ignore::DeprecationWarning"
+    "-W"
+    "ignore::DeprecationWarning"
   ];
 
   env = {

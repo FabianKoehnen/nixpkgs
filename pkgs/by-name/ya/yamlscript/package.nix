@@ -1,12 +1,16 @@
-{ lib, buildGraalvmNativeImage, fetchurl }:
+{
+  lib,
+  buildGraalvmNativeImage,
+  fetchurl,
+}:
 
 buildGraalvmNativeImage rec {
   pname = "yamlscript";
-  version = "0.1.46";
+  version = "0.1.96";
 
   src = fetchurl {
     url = "https://github.com/yaml/yamlscript/releases/download/${version}/yamlscript.cli-${version}-standalone.jar";
-    hash = "sha256-eHmHliWud2ONK3lHYpLlJ1+KhvH5vuD+x5kC54ZMfWk=";
+    hash = "sha256-nwqZhGOtNEJ0qzOTFdHFWBSyt4hmLhn6nhdCz2jyUbg=";
   };
 
   executable = "ys";

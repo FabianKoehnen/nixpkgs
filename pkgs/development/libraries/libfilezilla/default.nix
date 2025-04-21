@@ -1,38 +1,49 @@
-{ lib, stdenv
-, fetchurl
-, autoreconfHook
-, gettext
-, gnutls
-, nettle
-, pkg-config
-, libiconv
-, libxcrypt
-, ApplicationServices
+{
+  lib,
+  stdenv,
+  fetchsvn,
+  autoreconfHook,
+  gettext,
+  gnutls,
+  nettle,
+  pkg-config,
+  libiconv,
+  libxcrypt,
+  ApplicationServices,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation {
   pname = "libfilezilla";
-  version = "0.46.0";
+  version = "0.49.0";
 
-  src = fetchurl {
-    url = "https://download.filezilla-project.org/${pname}/${pname}-${version}.tar.xz";
-    hash = "sha256-OHr1xNSENIKl+/GD0B3ZYZtLha+g1olcXuyzpgEvrCE=";
+  src = fetchsvn {
+    url = "https://svn.filezilla-project.org/svn/libfilezilla/trunk";
+    rev = "11192";
+    hash = "sha256-fm1cenGwYcPz0TtMzbPXrZA7nAzwo8toBNA9cW2Gnh0=";
   };
 
-  nativeBuildInputs = [ autoreconfHook pkg-config ];
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
 
-  buildInputs = [ gettext gnutls nettle libxcrypt ]
-    ++ lib.optionals stdenv.isDarwin [ libiconv ApplicationServices ];
-
-  preBuild = lib.optionalString (stdenv.isDarwin) ''
-    export MACOSX_DEPLOYMENT_TARGET=11.0
-  '';
+  buildInputs =
+    [
+      gettext
+      gnutls
+      nettle
+      libxcrypt
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      libiconv
+      ApplicationServices
+    ];
 
   enableParallelBuilding = true;
 
   meta = with lib; {
     homepage = "https://lib.filezilla-project.org/";
-    description = "A modern C++ library, offering some basic functionality to build high-performing, platform-independent programs";
+    description = "Modern C++ library, offering some basic functionality to build high-performing, platform-independent programs";
     license = licenses.gpl2Plus;
     maintainers = with maintainers; [ pSub ];
     platforms = lib.platforms.unix;

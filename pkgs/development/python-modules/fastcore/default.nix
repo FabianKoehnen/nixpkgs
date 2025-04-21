@@ -1,40 +1,39 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, packaging
-, pytestCheckHook
-, pythonOlder
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  packaging,
+  pythonOlder,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "fastcore";
-  version = "1.5.29";
-  format = "setuptools";
+  version = "1.8.1";
+  pyproject = true;
 
   disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
     owner = "fastai";
-    repo = pname;
-    rev = "refs/tags/${version}";
-    hash = "sha256-yCPOF150TdkPHfLl8Jo2oow+91IzRKgnXo3eQMn5wK0=";
+    repo = "fastcore";
+    tag = version;
+    hash = "sha256-slUOh7KBVJ11NqsAR7yC+4Tyqxy3Yq6f9OTlQesJ608=";
   };
 
-  propagatedBuildInputs = [
-    packaging
-  ];
+  build-system = [ setuptools ];
+
+  dependencies = [ packaging ];
 
   # Module has no tests
   doCheck = false;
 
-  pythonImportsCheck = [
-    "fastcore"
-  ];
+  pythonImportsCheck = [ "fastcore" ];
 
   meta = with lib; {
     description = "Python module for Fast AI";
     homepage = "https://github.com/fastai/fastcore";
-    changelog = "https://github.com/fastai/fastcore/blob/${version}/CHANGELOG.md";
+    changelog = "https://github.com/fastai/fastcore/blob/${src.tag}/CHANGELOG.md";
     license = with licenses; [ asl20 ];
     maintainers = with maintainers; [ fab ];
   };

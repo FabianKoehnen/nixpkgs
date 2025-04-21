@@ -1,27 +1,41 @@
-{ lib
-, buildPythonPackage
-, dask
-, fetchPypi
-, numba
-, numpy
-, pytestCheckHook
-, pythonOlder
-, scipy
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+
+  # build-system
+  setuptools,
+  setuptools-scm,
+
+  # dependencies
+  numba,
+  numpy,
+  scipy,
+
+  # tests
+  dask,
+  pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "sparse";
-  version = "0.15.1";
-  format = "setuptools";
+  version = "0.16.0";
+  pyproject = true;
 
-  disabled = pythonOlder "3.6";
-
-  src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-lzrcuIqNuOPYBHlTMx4m0/ZKVlf5tGprhZxHZjw+75k=";
+  src = fetchFromGitHub {
+    owner = "pydata";
+    repo = "sparse";
+    tag = version;
+    hash = "sha256-ChSEb+IwzutDgYBJxhlunRaF8VvkLHW/ae5RdrljWj0=";
   };
 
-  propagatedBuildInputs = [
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
     numba
     numpy
     scipy
@@ -29,19 +43,18 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [
     dask
+    pytest-cov-stub
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [
-    "sparse"
-  ];
+  pythonImportsCheck = [ "sparse" ];
 
-  meta = with lib; {
+  meta = {
     description = "Sparse n-dimensional arrays computations";
     homepage = "https://sparse.pydata.org/";
     changelog = "https://sparse.pydata.org/en/stable/changelog.html";
     downloadPage = "https://github.com/pydata/sparse/releases/tag/${version}";
-    license = licenses.bsd3;
-    maintainers = with maintainers; [ ];
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ GaetanLepage ];
   };
 }

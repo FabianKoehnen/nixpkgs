@@ -1,43 +1,40 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, autopage
-, cmd2
-, importlib-metadata
-, installShellFiles
-, openstackdocstheme
-, pbr
-, prettytable
-, pyparsing
-, pyyaml
-, stevedore
-, sphinx
-, callPackage
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  autopage,
+  cmd2,
+  importlib-metadata,
+  openstackdocstheme,
+  pbr,
+  prettytable,
+  pyparsing,
+  pyyaml,
+  setuptools,
+  stevedore,
+  sphinxHook,
+  callPackage,
 }:
 
 buildPythonPackage rec {
   pname = "cliff";
-  version = "4.6.0";
-  format = "setuptools";
+  version = "4.9.1";
+  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-LzjOi9HqSVjWbxWwZqxH5l1h9gC5MZuSHhLp6cvNmdA=";
+    hash = "sha256-WzkhmCk8C5Il1Fm+i6cQz4JI8e4zAGves9kvsAElkrQ=";
   };
 
-  postPatch = ''
-    # only a small portion of the listed packages are actually needed for running the tests
-    # so instead of removing them one by one remove everything
-    rm test-requirements.txt
-  '';
-
-  nativeBuildInputs = [
-    installShellFiles
+  build-system = [
     openstackdocstheme
-    sphinx
+    setuptools
+    sphinxHook
   ];
 
-  propagatedBuildInputs = [
+  sphinxBuilders = [ "man" ];
+
+  dependencies = [
     autopage
     cmd2
     importlib-metadata
@@ -47,11 +44,6 @@ buildPythonPackage rec {
     pyyaml
     stevedore
   ];
-
-  postInstall = ''
-    sphinx-build -a -E -d doc/build/doctrees -b man doc/source doc/build/man
-    installManPage doc/build/man/cliff.1
-  '';
 
   # check in passthru.tests.pytest to escape infinite recursion with stestr
   doCheck = false;

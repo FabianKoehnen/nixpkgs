@@ -1,40 +1,35 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, hatchling
-, pythonOlder
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "mitmproxy-macos";
-  version = "0.5.1";
-  pyproject = true;
+  version = "0.11.5";
+  format = "wheel";
 
-  disabled = pythonOlder "3.10";
-
-  src = fetchFromGitHub {
-    owner = "mitmproxy";
-    repo = "mitmproxy_rs";
-    rev = "refs/tags/${version}";
-    hash = "sha256-nrm1T2yaGVmYsubwNJHPnPDC/A/jYiKVzwBKmuc9MD4=";
+  src = fetchPypi {
+    pname = "mitmproxy_macos";
+    inherit version;
+    format = "wheel";
+    dist = "py3";
+    python = "py3";
+    hash = "sha256-j3qqZGrMZLpHkKf01Gy5+/18sEEbm3pWfbBASGS/8o0=";
   };
 
-  sourceRoot = "${src.name}/mitmproxy-macos";
+  # repo has no python tests
+  doCheck = false;
 
-  nativeBuildInputs = [
-    hatchling
-  ];
-
-  pythonImportsCheck = [
-    "mitmproxy_macos"
-  ];
+  pythonImportsCheck = [ "mitmproxy_macos" ];
 
   meta = with lib; {
-    description = "The MacOS Rust bits in mitmproxy";
+    description = "MacOS Rust bits in mitmproxy";
     homepage = "https://github.com/mitmproxy/mitmproxy_rs/tree/main/mitmproxy-macos";
     changelog = "https://github.com/mitmproxy/mitmproxy_rs/blob/${version}/CHANGELOG.md";
     license = licenses.mit;
     maintainers = with maintainers; [ boltzmannrain ];
     platforms = platforms.darwin;
+    sourceProvenance = with sourceTypes; [ binaryBytecode ];
   };
 }

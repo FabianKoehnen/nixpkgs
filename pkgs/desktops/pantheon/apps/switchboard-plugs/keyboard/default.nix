@@ -1,35 +1,37 @@
-{ lib
-, stdenv
-, fetchFromGitHub
-, nix-update-script
-, substituteAll
-, meson
-, ninja
-, pkg-config
-, vala
-, libgee
-, gnome-settings-daemon
-, granite
-, gsettings-desktop-schemas
-, gtk3
-, libhandy
-, libxml2
-, libgnomekbd
-, libxklavier
-, ibus
-, onboard
-, switchboard
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  nix-update-script,
+  replaceVars,
+  meson,
+  ninja,
+  pkg-config,
+  vala,
+  libadwaita,
+  libgee,
+  gettext,
+  gnome-settings-daemon,
+  granite7,
+  gsettings-desktop-schemas,
+  gtk4,
+  libxml2,
+  libgnomekbd,
+  libxklavier,
+  ibus,
+  onboard,
+  switchboard,
 }:
 
 stdenv.mkDerivation rec {
   pname = "switchboard-plug-keyboard";
-  version = "3.2.1";
+  version = "8.0.1";
 
   src = fetchFromGitHub {
     owner = "elementary";
     repo = pname;
     rev = version;
-    sha256 = "sha256-4LfS2F8pLbZw+HhnEVmZqbEaNCM96q+lqnf4sUBDVJI=";
+    sha256 = "sha256-/jfUftlNL+B4570ajropS7/2fqro380kZzpPwm+A9fA=";
   };
 
   patches = [
@@ -37,13 +39,13 @@ stdenv.mkDerivation rec {
     # https://github.com/elementary/switchboard-plug-keyboard/issues/324
     ./hide-install-unlisted-engines-button.patch
 
-    (substituteAll {
-      src = ./fix-paths.patch;
-      inherit ibus onboard libgnomekbd;
+    (replaceVars ./fix-paths.patch {
+      inherit onboard libgnomekbd;
     })
   ];
 
   nativeBuildInputs = [
+    gettext # msgfmt
     libxml2
     meson
     ninja
@@ -53,12 +55,12 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     gnome-settings-daemon # media-keys
-    granite
+    granite7
     gsettings-desktop-schemas
-    gtk3
+    gtk4
     ibus
+    libadwaita
     libgee
-    libhandy
     libxklavier
     switchboard
   ];

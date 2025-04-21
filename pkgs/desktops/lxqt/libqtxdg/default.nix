@@ -1,27 +1,46 @@
-{ lib
-, mkDerivation
-, fetchFromGitHub
-, cmake
-, qtbase
-, qtsvg
-, lxqt-build-tools
-, gitUpdater
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  fetchpatch,
+  cmake,
+  qtbase,
+  qtsvg,
+  lxqt-build-tools,
+  wrapQtAppsHook,
+  gitUpdater,
+  version ? "4.1.0",
 }:
 
-mkDerivation rec {
+stdenv.mkDerivation rec {
   pname = "libqtxdg";
-  version = "3.12.0";
+  inherit version;
 
   src = fetchFromGitHub {
     owner = "lxqt";
     repo = pname;
     rev = version;
-    hash = "sha256-y+3noaHubZnwUUs8vbMVvZPk+6Fhv37QXUb//reedCU=";
+    hash =
+      {
+        "3.12.0" = "sha256-y+3noaHubZnwUUs8vbMVvZPk+6Fhv37QXUb//reedCU=";
+        "4.1.0" = "sha256-Efn08a8MkR459Ww0WiEb5GXKgQzJwKupIdL2TySpivE=";
+      }
+      ."${version}";
   };
+
+  # Fix build with Qt 6.9
+  # FIXME: remove in next release
+  patches = lib.optionals (version == "4.1.0") [
+    (fetchpatch {
+      url = "https://github.com/lxqt/libqtxdg/commit/35ce74f1510a9f41b2aff82fd1eda63014c3fe2b.patch";
+      hash = "sha256-udO3RQkzkcDBCxMNTIsORlDCLsZrxCbi0dXCBRuoQQQ=";
+    })
+  ];
 
   nativeBuildInputs = [
     cmake
     lxqt-build-tools
+    wrapQtAppsHook
   ];
 
   buildInputs = [

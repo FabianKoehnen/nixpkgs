@@ -1,28 +1,29 @@
-{ lib
-, stdenv
-, rustPlatform
-, fetchFromGitHub
-, pkg-config
-, openssl
-, rocksdb
-, testers
-, surrealdb
-, darwin
-, protobuf
+{
+  lib,
+  stdenv,
+  rustPlatform,
+  fetchFromGitHub,
+  pkg-config,
+  openssl,
+  rocksdb,
+  testers,
+  surrealdb,
+  darwin,
+  protobuf,
 }:
-
 rustPlatform.buildRustPackage rec {
   pname = "surrealdb";
-  version = "1.3.1";
+  version = "2.2.2";
 
   src = fetchFromGitHub {
     owner = "surrealdb";
     repo = "surrealdb";
-    rev = "v${version}";
-    hash = "sha256-dnfgU7nTX3vvqN9Mox6USRfpFdEI/dAOKIVZ2Jd4t9o=";
+    tag = "v${version}";
+    hash = "sha256-NUmv/Ue14xrmBCxOkVXvcPmOwAA8L6LLPRu5E5Zkxw0=";
   };
 
-  cargoHash = "sha256-B+x+xEcwHqoYMolAuMQzSiO/QA1FiBGO3eis9kgN1S4=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-NkAove8RlLkNI1KnMfJPnoqUswJ22Z2FOcpl05lqpKM=";
 
   # error: linker `aarch64-linux-gnu-gcc` not found
   postPatch = ''
@@ -35,19 +36,20 @@ rustPlatform.buildRustPackage rec {
   ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
   ROCKSDB_LIB_DIR = "${rocksdb}/lib";
 
+  RUSTFLAGS = "--cfg surrealdb_unstable";
+
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
   ];
 
-  buildInputs = [ openssl ]
-    ++ lib.optionals stdenv.isDarwin [ darwin.apple_sdk.frameworks.SystemConfiguration ];
+  buildInputs = [
+    openssl
+  ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.apple_sdk.frameworks.SystemConfiguration ];
 
   doCheck = false;
 
   checkFlags = [
-    # flaky
-    "--skip=ws_integration::none::merge"
     # requires docker
     "--skip=database_upgrade"
   ];
@@ -60,10 +62,14 @@ rustPlatform.buildRustPackage rec {
   };
 
   meta = with lib; {
-    description = "A scalable, distributed, collaborative, document-graph database, for the realtime web";
+    description = "Scalable, distributed, collaborative, document-graph database, for the realtime web";
     homepage = "https://surrealdb.com/";
     mainProgram = "surreal";
     license = licenses.bsl11;
-    maintainers = with maintainers; [ sikmir happysalada ];
+    maintainers = with maintainers; [
+      sikmir
+      happysalada
+      siriobalmelli
+    ];
   };
 }

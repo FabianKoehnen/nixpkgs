@@ -1,8 +1,13 @@
-{ buildPecl, lib, fetchFromGitHub }:
+{
+  buildPecl,
+  lib,
+  fetchFromGitHub,
+}:
 
 let
-  version = "3.3.1";
-in buildPecl {
+  version = "3.4.2";
+in
+buildPecl {
   inherit version;
 
   pname = "xdebug";
@@ -11,11 +16,10 @@ in buildPecl {
     owner = "xdebug";
     repo = "xdebug";
     rev = version;
-    hash = "sha256-Zt1BIqNKsTHtIXy0Dar52sZxLi5k12LQAbxOLKQPMN8=";
+    hash = "sha256-LTM2c9DC837y0t4S3m9292x37q4tXg1Poh2dm0KAyJc=";
   };
 
   doCheck = true;
-  checkTarget = "test";
 
   zendExtension = true;
 

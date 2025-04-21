@@ -1,21 +1,25 @@
-
-{ lib
-, buildGoModule
-, fetchFromGitHub
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
 }:
 
 buildGoModule rec {
   pname = "spicedb";
-  version = "1.30.0";
+  version = "1.42.1";
 
   src = fetchFromGitHub {
     owner = "authzed";
     repo = "spicedb";
     rev = "v${version}";
-    hash = "sha256-enMUGLOoVy56PCAqfW6jTOgEr/Me6kbuUvq3YmlxMPs=";
+    hash = "sha256-mgVJtMqLVLShWbv3FqzGovWD3O/xHn+noDvrbQa6XrA=";
   };
 
-  vendorHash = "sha256-lMhfCkuLuA8aj3Q+I/v/Ohof/htBJjPRmQ3c9QXsioc=";
+  vendorHash = "sha256-mjzVMtTLJiimzQcXntd2JTIDQS7ndRqosxCVorzcn54=";
+
+  ldflags = [
+    "-X 'github.com/jzelinskie/cobrautil/v2.Version=${src.rev}'"
+  ];
 
   subPackages = [ "cmd/spicedb" ];
 

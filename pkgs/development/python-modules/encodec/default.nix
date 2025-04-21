@@ -1,12 +1,13 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
 
-# dependencies
-, einops
-, numpy
-, torch-bin
-, torchaudio-bin
+  # dependencies
+  einops,
+  numpy,
+  torch,
+  torchaudio,
 }:
 
 buildPythonPackage rec {
@@ -24,8 +25,8 @@ buildPythonPackage rec {
   propagatedBuildInputs = [
     einops
     numpy
-    torch-bin
-    torchaudio-bin
+    torch
+    torchaudio
   ];
 
   pythonImportsCheck = [ "encodec" ];

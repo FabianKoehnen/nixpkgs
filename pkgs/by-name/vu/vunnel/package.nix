@@ -1,28 +1,29 @@
-{ lib
-, fetchFromGitHub
-, git
-, python3
+{
+  lib,
+  fetchFromGitHub,
+  git,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "vunnel";
-  version = "0.21.1";
+  version = "0.31.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anchore";
     repo = "vunnel";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-m+khfAEN+fO3UuCYBqshlvjIXSzebeWBQtoQtPalIio=";
+    tag = "v${version}";
+    hash = "sha256-3o4ap8BElDxxg3pohzXz38AQlQbzOPeSc5/OYZg8VFM=";
   };
 
   pythonRelaxDeps = [
+    "defusedxml"
     "ijson"
+    "importlib-metadata"
     "sqlalchemy"
-  ];
-
-  nativeBuildInputs = with python3.pkgs; [
-    pythonRelaxDepsHook
+    "websockets"
+    "xsdata"
   ];
 
   build-system = with python3.pkgs; [
@@ -42,6 +43,7 @@ python3.pkgs.buildPythonApplication rec {
     mashumaro
     mergedeep
     orjson
+    packageurl-python
     pytest-snapshot
     python-dateutil
     pyyaml
@@ -52,18 +54,16 @@ python3.pkgs.buildPythonApplication rec {
     zstandard
   ];
 
-  nativeCheckInputs = [
-    git
-  ] ++ (with python3.pkgs; [
-    jsonschema
-    pytest-mock
-    pytest-unordered
-    pytestCheckHook
-  ]);
+  nativeCheckInputs =
+    [ git ]
+    ++ (with python3.pkgs; [
+      jsonschema
+      pytest-mock
+      pytest-unordered
+      pytestCheckHook
+    ]);
 
-  pythonImportsCheck = [
-    "vunnel"
-  ];
+  pythonImportsCheck = [ "vunnel" ];
 
   disabledTests = [
     # Compare output

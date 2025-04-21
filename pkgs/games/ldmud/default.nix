@@ -1,29 +1,30 @@
-{ lib
-, fetchFromGitHub
-, stdenv
-, autoreconfHook
-, pkg-config
-, bison
-, libiconv
-, pcre
-, libgcrypt
-, libxcrypt
-, json_c
-, libxml2
-, ipv6Support ? false
-, mccpSupport ? false
-, zlib
-, mysqlSupport ? false
-, libmysqlclient
-, postgresSupport ? false
-, postgresql
-, sqliteSupport ? false
-, sqlite
-, tlsSupport ? false
-, openssl
-, pythonSupport ? false
-, python310
-, ...
+{
+  lib,
+  fetchFromGitHub,
+  stdenv,
+  autoreconfHook,
+  pkg-config,
+  bison,
+  libiconv,
+  pcre,
+  libgcrypt,
+  libxcrypt-legacy,
+  json_c,
+  libxml2,
+  ipv6Support ? false,
+  mccpSupport ? false,
+  zlib,
+  mysqlSupport ? false,
+  libmysqlclient,
+  postgresSupport ? false,
+  libpq,
+  sqliteSupport ? false,
+  sqlite,
+  tlsSupport ? false,
+  openssl,
+  pythonSupport ? false,
+  python310,
+  ...
 }:
 
 stdenv.mkDerivation rec {
@@ -37,16 +38,33 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-PkrjP7tSZMaj61Hsn++7+CumhqFPLbf0+eAI6afP9HA=";
   };
 
+  patches = [
+    ./libxml2-2.12.0-compat.patch
+    ./mysql-compat.patch
+  ];
+
   sourceRoot = "${src.name}/src";
 
-  nativeBuildInputs =
-    [ autoreconfHook pkg-config bison ];
-  buildInputs = [ libgcrypt libxcrypt pcre json_c libxml2 ]
-    ++ lib.optional mccpSupport zlib ++ lib.optional mysqlSupport libmysqlclient
-    ++ lib.optional postgresSupport postgresql
-    ++ lib.optional sqliteSupport sqlite ++ lib.optional tlsSupport openssl
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+    bison
+  ];
+  buildInputs =
+    [
+      libgcrypt
+      libxcrypt-legacy
+      pcre
+      json_c
+      libxml2
+    ]
+    ++ lib.optional mccpSupport zlib
+    ++ lib.optional mysqlSupport libmysqlclient
+    ++ lib.optional postgresSupport libpq
+    ++ lib.optional sqliteSupport sqlite
+    ++ lib.optional tlsSupport openssl
     ++ lib.optional pythonSupport python310
-    ++ lib.optionals stdenv.isDarwin [ libiconv ];
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
   # To support systems without autoconf LD puts its configure.ac in a non-default
   # location and uses a helper script. We skip that script and symlink the .ac
@@ -74,7 +92,11 @@ stdenv.mkDerivation rec {
     export LDFLAGS="-L${libmysqlclient}/lib/mysql"
   '';
 
-  installTargets = [ "install-driver" "install-utils" "install-headers" ];
+  installTargets = [
+    "install-driver"
+    "install-utils"
+    "install-headers"
+  ];
 
   postInstall = ''
     mkdir -p "$out/share/"
@@ -82,7 +104,7 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with lib; {
-    description = "A gamedriver for LPMuds including a LPC compiler, interpreter and runtime";
+    description = "Gamedriver for LPMuds including a LPC compiler, interpreter and runtime";
     homepage = "https://ldmud.eu";
     changelog = "https://github.com/ldmud/ldmud/blob/${version}/HISTORY";
     longDescription = ''

@@ -13,13 +13,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "cowsql";
-  version = "1.15.6";
+  version = "1.15.8";
 
   src = fetchFromGitHub {
     owner = "cowsql";
     repo = "cowsql";
-    rev = "refs/tags/v${finalAttrs.version}";
-    hash = "sha256-cr6AT/n2/6DuGK53JvGLwCkMi4+fS128qxj3X9SJYuw=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-rwTa9owtnkyI9OpUKLk6V7WbAkqlYucpGzPnHHvKW/A=";
   };
 
   nativeBuildInputs = [
@@ -49,7 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = with lib; {
-    changelog = "https://github.com/cowsql/cowsql/releases/tag/${version}";
+    changelog = "https://github.com/cowsql/cowsql/releases/tag/${finalAttrs.version}";
     description = "Embeddable, replicated and fault tolerant SQL engine";
     homepage = "https://github.com/cowsql/cowsql";
     license = licenses.lgpl3Only;

@@ -15,9 +15,9 @@
 {
   cudaVersion,
   flags,
-  hostPlatform,
   lib,
   mkVersionedPackageName,
+  stdenv,
 }:
 let
   inherit (lib)
@@ -29,6 +29,8 @@ let
     trivial
     ;
 
+  inherit (stdenv) hostPlatform;
+
   redistName = "cutensor";
   pname = "libcutensor";
 
@@ -38,6 +40,8 @@ let
     "1.5.0"
     "1.6.2"
     "1.7.0"
+    "2.0.2"
+    "2.1.0"
   ];
 
   # Manifests :: { redistrib, feature }
@@ -94,13 +98,13 @@ let
   redistArch = flags.getRedistArch hostPlatform.system;
   # platformIsSupported :: Manifests -> Boolean
   platformIsSupported =
-    { feature, ... }:
+    { feature, redistrib, ... }:
     (attrsets.attrByPath [
       pname
       redistArch
     ] null feature) != null;
 
-  # TODO(@connorbaker): With an auxilliary file keeping track of the CUDA versions each release supports,
+  # TODO(@connorbaker): With an auxiliary file keeping track of the CUDA versions each release supports,
   # we could filter out releases that don't support our CUDA version.
   # However, we don't have that currently, so we make a best-effort to try to build TensorRT with whatever
   # libPath corresponds to our CUDA version.
@@ -138,7 +142,7 @@ let
           maintainers = prevAttrs.meta.maintainers ++ [ lib.maintainers.obsidian-systems-maintenance ];
           license = lib.licenses.unfreeRedistributable // {
             shortName = "cuTENSOR EULA";
-            name = "cuTENSOR SUPPLEMENT TO SOFTWARE LICENSE AGREEMENT FOR NVIDIA SOFTWARE DEVELOPMENT KITS";
+            fullName = "cuTENSOR SUPPLEMENT TO SOFTWARE LICENSE AGREEMENT FOR NVIDIA SOFTWARE DEVELOPMENT KITS";
             url = "https://docs.nvidia.com/cuda/cutensor/license.html";
           };
         };

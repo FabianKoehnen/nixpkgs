@@ -1,31 +1,34 @@
-{ lib
-, python3Packages
-, fetchFromGitHub
-, aria2
-, meson
-, ninja
-, pkg-config
-, gobject-introspection
-, wrapGAppsHook4
-, desktop-file-utils
-, libadwaita
+{
+  lib,
+  python3Packages,
+  fetchFromGitHub,
+  aria2,
+  meson,
+  ninja,
+  pkg-config,
+  gobject-introspection,
+  wrapGAppsHook4,
+  desktop-file-utils,
+  libadwaita,
+  ffmpeg,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "varia";
-  version = "2024.3.20";
+  version = "2025.1.24-1";
   pyproject = false;
 
   src = fetchFromGitHub {
     owner = "giantpinkrobots";
     repo = "varia";
-    rev = "v${version}";
-    hash = "sha256-kvpARXunKaybw9mNCvCTjtHTGbnbVmja5npcjFY5cdM=";
+    tag = "v${version}";
+    hash = "sha256-ZTsp2nVqNe+7uEk6HH95AtJMbdKHmKMy3l6q1Xpx4FY=";
   };
 
   postPatch = ''
     substituteInPlace src/varia-py.in \
-      --replace-fail 'aria2cexec = sys.argv[1]' 'aria2cexec = "${lib.getExe aria2}"'
+      --replace-fail 'aria2cexec = sys.argv[1]' 'aria2cexec = "${lib.getExe aria2}"' \
+      --replace-fail 'ffmpegexec = sys.argv[2]' 'ffmpegexec = "${lib.getExe ffmpeg}"'
   '';
 
   nativeBuildInputs = [
@@ -44,6 +47,7 @@ python3Packages.buildPythonApplication rec {
   propagatedBuildInputs = with python3Packages; [
     pygobject3
     aria2p
+    yt-dlp
   ];
 
   postInstall = ''
@@ -58,7 +62,7 @@ python3Packages.buildPythonApplication rec {
   '';
 
   meta = with lib; {
-    description = "A simple download manager based on aria2 and libadwaita";
+    description = "Simple download manager based on aria2 and libadwaita";
     homepage = "https://giantpinkrobots.github.io/varia";
     license = licenses.mpl20;
     mainProgram = "varia";

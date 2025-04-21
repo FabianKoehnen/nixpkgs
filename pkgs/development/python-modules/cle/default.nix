@@ -1,32 +1,31 @@
-{ lib
-, archinfo
-, buildPythonPackage
-, cffi
-, fetchFromGitHub
-, minidump
-, pefile
-, pyelftools
-, pynose
-, pytestCheckHook
-, pythonOlder
-, pyvex
-, pyxbe
-, setuptools
-, sortedcontainers
+{
+  lib,
+  archinfo,
+  buildPythonPackage,
+  cart,
+  cffi,
+  fetchFromGitHub,
+  pefile,
+  pyelftools,
+  pytestCheckHook,
+  pythonOlder,
+  pyvex,
+  setuptools,
+  sortedcontainers,
+  nix-update-script,
 }:
 
 let
   # The binaries are following the argr projects release cycle
-  version = "9.2.97";
+  version = "9.2.150";
 
   # Binary files from https://github.com/angr/binaries (only used for testing and only here)
   binaries = fetchFromGitHub {
     owner = "angr";
     repo = "binaries";
     rev = "refs/tags/v${version}";
-    hash = "sha256-FiPEqfNaAXI+xSWE+So//Uwz9k3bANHQ++nRSPKkddM=";
+    hash = "sha256-Gn6ipdxU5/POypRkQFyMNqIUGGyMLeUG2upR1GAB54w=";
   };
-
 in
 buildPythonPackage rec {
   pname = "cle";
@@ -39,28 +38,22 @@ buildPythonPackage rec {
     owner = "angr";
     repo = "cle";
     rev = "refs/tags/v${version}";
-    hash = "sha256-tain1I7Td+0v7n+px3mQnz7reKZUbGYDWfKnDhvmU8I=";
+    hash = "sha256-rBF3uvBMe+ef5Ldh+X2yL+fd/CpEJJXhkVHAY+SgOvk=";
   };
 
-  build-system = [
-    setuptools
-  ];
+  build-system = [ setuptools ];
 
   dependencies = [
     archinfo
+    cart
     cffi
-    minidump
     pefile
     pyelftools
     pyvex
-    pyxbe
     sortedcontainers
   ];
 
-  nativeCheckInputs = [
-    pynose
-    pytestCheckHook
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   # Place test binaries in the right location (location is hard-coded in the tests)
   preCheck = ''
@@ -82,14 +75,14 @@ buildPythonPackage rec {
     "test_remote_file_map"
   ];
 
-  pythonImportsCheck = [
-    "cle"
-  ];
+  pythonImportsCheck = [ "cle" ];
+
+  passthru.updateScript = nix-update-script { };
 
   meta = with lib; {
     description = "Python loader for many binary formats";
     homepage = "https://github.com/angr/cle";
-    license = with licenses; [ bsd2 ];
+    license = licenses.bsd2;
     maintainers = with maintainers; [ fab ];
   };
 }

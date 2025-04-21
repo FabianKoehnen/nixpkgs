@@ -1,50 +1,71 @@
-{ lib
-, python3Packages
-, fetchFromGitHub
-, dpkg
-, nix-update-script
-, python3
+{
+  lib,
+  python3Packages,
+  fetchFromGitHub,
+  dpkg,
+  nix-update-script,
+  testers,
+  rockcraft,
+  cacert,
+  writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "rockcraft";
-  version = "1.2.2";
+  version = "1.10.0";
 
   src = fetchFromGitHub {
     owner = "canonical";
     repo = "rockcraft";
-    rev = "refs/tags/${version}";
-    hash = "sha256-f6qLvk5cebHjZx51nJYYAwILGCTyj6FKlb3HGt6iz4M=";
+    rev = version;
+    hash = "sha256-LrUs6/YRQYU0o1kmNdBhafvDIyw91FnW8+9i0Jj5f+Y=";
   };
 
-  postPatch = ''
-    substituteInPlace rockcraft/__init__.py \
-      --replace-fail "dev" "${version}"
-  '';
+  pyproject = true;
+  build-system = with python3Packages; [ setuptools-scm ];
 
-  propagatedBuildInputs = with python3Packages; [
-    craft-application-1
+  dependencies = with python3Packages; [
+    craft-application
     craft-archives
+    craft-platforms
     spdx-lookup
+    tabulate
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytest-check
-    pytest-mock
-    pytest-subprocess
-    pytestCheckHook
-  ] ++ [
-    dpkg
+  nativeCheckInputs =
+    with python3Packages;
+    [
+      craft-platforms
+      pytest-check
+      pytest-mock
+      pytest-subprocess
+      pytestCheckHook
+      writableTmpDirAsHomeHook
+    ]
+    ++ [ dpkg ];
+
+  disabledTests = [
+    "test_project_all_platforms_invalid"
+    "test_run_init_flask"
+    "test_run_init_django"
   ];
 
-  preCheck = ''
-    mkdir -p check-phase
-    export HOME="$(pwd)/check-phase"
-  '';
+  disabledTestPaths = [
+    # Relies upon info in the .git directory which is stripped by fetchFromGitHub,
+    # and the version is overridden anyway.
+    "tests/integration/test_version.py"
+    # Tests non-Nix native packaging
+    "tests/integration/test_setuptools.py"
+  ];
 
-  disabledTests = [ "test_expand_extensions" ];
-
-  passthru.updateScript = nix-update-script { };
+  passthru = {
+    updateScript = nix-update-script { };
+    tests.version = testers.testVersion {
+      package = rockcraft;
+      command = "env SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt HOME=$(mktemp -d) rockcraft --version";
+      version = "rockcraft ${version}";
+    };
+  };
 
   meta = {
     mainProgram = "rockcraft";

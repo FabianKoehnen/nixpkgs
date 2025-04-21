@@ -15,7 +15,7 @@ let
   canRunGitGr = stdenv.hostPlatform.emulatorAvailable buildPackages;
   gitGr = "${stdenv.hostPlatform.emulator buildPackages} $out/bin/git-gr";
   pname = "git-gr";
-  version = "1.2.1";
+  version = "1.4.3";
 in
 rustPlatform.buildRustPackage {
   inherit pname version;
@@ -23,23 +23,22 @@ rustPlatform.buildRustPackage {
   src = fetchFromGitHub {
     owner = "9999years";
     repo = pname;
-    rev = "refs/tags/v${version}";
-    hash = "sha256-5Pr1z+RmY92cfT7KtFnUKpzhniUN6RjDKBekWiYCCuU=";
+    tag = "v${version}";
+    hash = "sha256-t308Ep27iRvRHSdvVMOrRGVoajBtnTutHAkKbZkO7Wg=";
   };
 
   buildFeatures = [ "clap_mangen" ];
 
-  cargoHash = "sha256-5JLTSBBTPGUbuqUql/cMJKBLlO2uzuU1EDhfScaeCUg=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-5YHE1NVUcZ5NeOl3Z87l3PVsmlkswhnT83Oi9loJjdM=";
 
   OPENSSL_NO_VENDOR = true;
 
-  nativeBuildInputs =
-    [installShellFiles]
-    ++ lib.optional stdenv.isLinux pkg-config;
+  nativeBuildInputs = [ installShellFiles ] ++ lib.optional stdenv.hostPlatform.isLinux pkg-config;
 
   buildInputs =
-    lib.optional stdenv.isLinux openssl
-    ++ lib.optionals stdenv.isDarwin [
+    lib.optional stdenv.hostPlatform.isLinux openssl
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
       libiconv
       darwin.apple_sdk.frameworks.CoreServices
       darwin.apple_sdk.frameworks.SystemConfiguration
@@ -60,7 +59,8 @@ rustPlatform.buildRustPackage {
 
   meta = with lib; {
     homepage = "https://github.com/9999years/git-gr";
-    description = "A Gerrit CLI client";
+    changelog = "https://github.com/9999years/git-gr/releases/tag/v${version}";
+    description = "Gerrit CLI client";
     license = [ licenses.mit ];
     maintainers = [ maintainers._9999years ];
     mainProgram = "git-gr";

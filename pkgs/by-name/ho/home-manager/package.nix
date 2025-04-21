@@ -1,29 +1,32 @@
-{ lib
-, bash
-, coreutils
-, fetchFromGitHub
-, findutils
-, gettext
-, gnused
-, installShellFiles
-, less
-, ncurses
-, nixos-option
-, stdenvNoCC
-, unixtools
-, unstableGitUpdater
+{
+  lib,
+  bash,
+  coreutils,
+  fetchFromGitHub,
+  findutils,
+  gettext,
+  gnused,
+  inetutils,
+  installShellFiles,
+  jq,
+  less,
+  ncurses,
+  nixos-option,
+  stdenvNoCC,
+  unixtools,
+  unstableGitUpdater,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "home-manager";
-  version = "unstable-2024-03-31";
+  version = "0-unstable-2025-04-19";
 
   src = fetchFromGitHub {
     name = "home-manager-source";
     owner = "nix-community";
     repo = "home-manager";
-    rev = "30f2ec39519f4f5a8a96af808c439e730c15aeab";
-    hash = "sha256-QpZanlbVu6Gb2K96u3vgu0F2BvZD74+fOsIFWcYEXoY=";
+    rev = "9676e8a52a177d80c8a42f66566362a6d74ecf78";
+    hash = "sha256-bvcatss0xodcdxXm0LUSLPd2jjrhqO3yFSu3stOfQXg=";
   };
 
   nativeBuildInputs = [
@@ -40,9 +43,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     install -D -m755 home-manager/home-manager $out/bin/home-manager
     install -D -m755 lib/bash/home-manager.sh $out/share/bash/home-manager.sh
 
-    installShellCompletion --bash --name home-manager.bash home-manager/completion.bash
-    installShellCompletion --fish --name home-manager.fish home-manager/completion.fish
-    installShellCompletion --zsh --name _home-manager home-manager/completion.zsh
+    installShellCompletion --cmd home-manager \
+      --bash home-manager/completion.bash \
+      --fish home-manager/completion.fish \
+      --zsh home-manager/completion.zsh
 
     for pofile in home-manager/po/*.po; do
       lang="''${pofile##*/}"
@@ -63,15 +67,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
           findutils
           gettext
           gnused
+          jq
           less
           ncurses
           nixos-option
-          unixtools.hostname
+          inetutils # for `hostname`
         ]
       }" \
-      --subst-var-by HOME_MANAGER_LIB '${placeholder "out"}/share/bash/home-manager.sh' \
+      --subst-var-by HOME_MANAGER_LIB "$out/share/bash/home-manager.sh" \
       --subst-var-by HOME_MANAGER_PATH "${finalAttrs.src}" \
-      --subst-var-by OUT '${placeholder "out"}'
+      --subst-var-by OUT "$out"
   '';
 
   passthru.updateScript = unstableGitUpdater {
@@ -80,7 +85,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     homepage = "https://nix-community.github.io/home-manager/";
-    description = "A Nix-based user environment configurator";
+    description = "Nix-based user environment configurator";
     longDescription = ''
       The Home-Manager project provides a basic system for managing a user
       environment using the Nix package manager together with the Nix libraries
@@ -89,7 +94,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     '';
     license = lib.licenses.mit;
     mainProgram = "home-manager";
-    maintainers = with lib.maintainers; [ AndersonTorres ];
+    maintainers = with lib.maintainers; [ bryango ];
     platforms = lib.platforms.unix;
   };
 })

@@ -1,17 +1,24 @@
-{ lib, buildGoModule, fetchFromGitHub, installShellFiles, testers, roxctl }:
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
+  installShellFiles,
+  testers,
+  roxctl,
+}:
 
 buildGoModule rec {
   pname = "roxctl";
-  version = "4.3.5";
+  version = "4.7.2";
 
   src = fetchFromGitHub {
     owner = "stackrox";
     repo = "stackrox";
     rev = version;
-    sha256 = "sha256-zTZ03Qtb3ndBf1MunhYS8rzPReExzEPGxCh1JexkwuA=";
+    sha256 = "sha256-W4g7//0r+XO1l6WoWm55pZAvyTsHNNI3kwBNvNvP+vw=";
   };
 
-  vendorHash = "sha256-Sl5eIK8PWeGi2V7q/Qm5Gfjj1A9nQPtM0BGdO6inPxk=";
+  vendorHash = "sha256-eTxcJnAZUKk6VDQhbjxnsiQWEpM2jA228SAhrCqjbF4=";
 
   nativeBuildInputs = [ installShellFiles ];
 

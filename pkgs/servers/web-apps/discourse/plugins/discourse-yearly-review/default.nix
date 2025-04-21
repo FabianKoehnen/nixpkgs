@@ -1,12 +1,16 @@
-{ lib, mkDiscoursePlugin, fetchFromGitHub }:
+{
+  lib,
+  mkDiscoursePlugin,
+  fetchFromGitHub,
+}:
 
 mkDiscoursePlugin {
   name = "discourse-yearly-review";
   src = fetchFromGitHub {
     owner = "discourse";
     repo = "discourse-yearly-review";
-    rev = "3246c6b378f9e69e664c575efc63c2ad83bcac2f";
-    sha256 = "sha256-usHHyfYP4YAQ94f7gvNSH7VBRRkdZMmsSi9QQM8tPfY=";
+    rev = "5229931ace1ee19ef2d1b7ed2469911f315669bb";
+    sha256 = "sha256-2xgHtXB7F5XP2OmB1QswrnPk5Sf32DFoUhlU4RMEZhI=";
   };
   meta = with lib; {
     homepage = "https://github.com/discourse/discourse-yearly-review";

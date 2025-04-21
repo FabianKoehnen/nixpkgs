@@ -1,45 +1,49 @@
-{ lib
-, stdenv
-, buildGoModule
-, fetchFromGitHub
-, pkg-config
-, libGL
-, xorg
-, Carbon
-, Cocoa
+{
+  lib,
+  stdenv,
+  buildGoModule,
+  fetchFromGitHub,
+  pkg-config,
+  libGL,
+  xorg,
+  Carbon,
+  Cocoa,
 }:
 
 buildGoModule rec {
   pname = "rymdport";
-  version = "3.5.3";
+  version = "3.8.0";
 
   src = fetchFromGitHub {
     owner = "Jacalz";
     repo = "rymdport";
     rev = "v${version}";
-    hash = "sha256-lCtFm360UeypzYpivlYXxuqZ0BzGzGkkq31dmgjwv4M=";
+    hash = "sha256-WWLs0gzFo1+scG+2JfNMd28jIP1BMMJOK4fhQ726mHY=";
   };
 
-  vendorHash = "sha256-PXRy12JWYQQMMzh7jrEhquileY2oYFvqt8KZvrfp2o0=";
+  vendorHash = "sha256-+FVERz1PVZSG8jqffUlglL+3VHsRNxHH0g2GYpYNQ9g=";
 
   nativeBuildInputs = [
     pkg-config
   ];
 
-  buildInputs = with xorg; [
-    libGL
-    libX11
-    libXcursor
-    libXext
-    libXi
-    libXinerama
-    libXrandr
-    libXxf86vm
-  ] ++ lib.optionals stdenv.isDarwin [
-    Carbon
-    Cocoa
-    IOKit
-  ];
+  buildInputs =
+    with xorg;
+    [
+      libGL
+      libX11
+      libXcursor
+      libXext
+      libXi
+      libXinerama
+      libXrandr
+      libXxf86vm
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      Carbon
+      Cocoa
+      IOKit
+    ];
 
   postInstall = ''
     for res in $(ls internal/assets/icons | sed -e 's/icon-//g' -e 's/.png//g'); do

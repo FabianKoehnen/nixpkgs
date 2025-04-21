@@ -1,23 +1,34 @@
-{ gcc12Stdenv # FIXME: Try removing this with a new ROCm release https://github.com/NixOS/nixpkgs/issues/271943
-, callPackage
-, recurseIntoAttrs
-, symlinkJoin
-, fetchFromGitHub
-, cudaPackages
-, python3Packages
-, elfutils
-, boost179
-, opencv
-, ffmpeg_4
-, libjpeg_turbo
-, rapidjson-unstable
+{
+  gcc12Stdenv, # FIXME: Try removing this with a new ROCm release https://github.com/NixOS/nixpkgs/issues/271943
+  callPackage,
+  recurseIntoAttrs,
+  symlinkJoin,
+  fetchFromGitHub,
+  cudaPackages,
+  python3Packages,
+  elfutils,
+  boost179,
+  opencv,
+  ffmpeg_4,
+  libjpeg_turbo,
 }:
 
 let
   rocmUpdateScript = callPackage ./update.nix { };
-in rec {
+in
+rec {
   ## ROCm ##
-  llvm = recurseIntoAttrs (callPackage ./llvm/default.nix { inherit rocmUpdateScript rocm-device-libs rocm-runtime rocm-thunk clr; });
+  llvm = recurseIntoAttrs (
+    callPackage ./llvm/default.nix {
+      inherit
+        rocmUpdateScript
+        rocm-device-libs
+        rocm-runtime
+        rocm-thunk
+        clr
+        ;
+    }
+  );
 
   rocm-core = callPackage ./rocm-core {
     inherit rocmUpdateScript;
@@ -93,7 +104,17 @@ in rec {
 
   # Replaces hip, opencl-runtime, and rocclr
   clr = callPackage ./clr {
-    inherit rocmUpdateScript hip-common hipcc rocm-device-libs rocm-comgr rocm-runtime roctracer rocminfo rocm-smi;
+    inherit
+      rocmUpdateScript
+      hip-common
+      hipcc
+      rocm-device-libs
+      rocm-comgr
+      rocm-runtime
+      roctracer
+      rocminfo
+      rocm-smi
+      ;
     inherit (llvm) clang;
     stdenv = llvm.rocmClangStdenv;
   };
@@ -106,14 +127,29 @@ in rec {
 
   # Needs GCC
   rocprofiler = callPackage ./rocprofiler {
-    inherit rocmUpdateScript clr rocm-core rocm-thunk rocm-device-libs roctracer rocdbgapi rocm-smi hsa-amd-aqlprofile-bin;
+    inherit
+      rocmUpdateScript
+      clr
+      rocm-core
+      rocm-thunk
+      rocm-device-libs
+      roctracer
+      rocdbgapi
+      rocm-smi
+      hsa-amd-aqlprofile-bin
+      ;
     inherit (llvm) clang;
     stdenv = gcc12Stdenv;
   };
 
   # Needs GCC
   roctracer = callPackage ./roctracer {
-    inherit rocmUpdateScript rocm-device-libs rocm-runtime clr;
+    inherit
+      rocmUpdateScript
+      rocm-device-libs
+      rocm-runtime
+      clr
+      ;
     stdenv = gcc12Stdenv;
   };
 
@@ -125,7 +161,12 @@ in rec {
   };
 
   rocdbgapi = callPackage ./rocdbgapi {
-    inherit rocmUpdateScript rocm-cmake rocm-comgr rocm-runtime;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocm-comgr
+      rocm-runtime
+      ;
     stdenv = llvm.rocmClangStdenv;
   };
 
@@ -140,12 +181,22 @@ in rec {
   };
 
   rocsparse = callPackage ./rocsparse {
-    inherit rocmUpdateScript rocm-cmake rocprim clr;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocprim
+      clr
+      ;
     stdenv = llvm.rocmClangStdenv;
   };
 
   rocthrust = callPackage ./rocthrust {
-    inherit rocmUpdateScript rocm-cmake rocprim clr;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocprim
+      clr
+      ;
     stdenv = llvm.rocmClangStdenv;
   };
 
@@ -157,23 +208,45 @@ in rec {
   hiprand = rocrand; # rocrand includes hiprand
 
   rocfft = callPackage ./rocfft {
-    inherit rocmUpdateScript rocm-cmake rocrand rocfft clr;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocrand
+      rocfft
+      clr
+      ;
     inherit (llvm) openmp;
     stdenv = llvm.rocmClangStdenv;
   };
 
   rccl = callPackage ./rccl {
-    inherit rocmUpdateScript rocm-cmake rocm-smi clr hipify;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocm-smi
+      clr
+      hipify
+      ;
     stdenv = llvm.rocmClangStdenv;
   };
 
   hipcub = callPackage ./hipcub {
-    inherit rocmUpdateScript rocm-cmake rocprim clr;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocprim
+      clr
+      ;
     stdenv = llvm.rocmClangStdenv;
   };
 
   hipsparse = callPackage ./hipsparse {
-    inherit rocmUpdateScript rocm-cmake rocsparse clr;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocsparse
+      clr
+      ;
     inherit (llvm) openmp;
     stdenv = llvm.rocmClangStdenv;
   };
@@ -184,7 +257,12 @@ in rec {
   };
 
   hipfft = callPackage ./hipfft {
-    inherit rocmUpdateScript rocm-cmake rocfft clr;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocfft
+      clr
+      ;
     inherit (llvm) openmp;
     stdenv = llvm.rocmClangStdenv;
   };
@@ -195,24 +273,50 @@ in rec {
   };
 
   rocblas = callPackage ./rocblas {
-    inherit rocblas rocmUpdateScript rocm-cmake clr tensile;
+    inherit
+      rocblas
+      rocmUpdateScript
+      rocm-cmake
+      clr
+      tensile
+      ;
     inherit (llvm) openmp;
     stdenv = llvm.rocmClangStdenv;
   };
 
   rocsolver = callPackage ./rocsolver {
-    inherit rocmUpdateScript rocm-cmake rocblas rocsparse clr;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocblas
+      rocsparse
+      clr
+      ;
     stdenv = llvm.rocmClangStdenv;
   };
 
   rocwmma = callPackage ./rocwmma {
-    inherit rocmUpdateScript rocm-cmake rocm-smi rocblas clr;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocm-smi
+      rocblas
+      clr
+      ;
     inherit (llvm) openmp;
     stdenv = llvm.rocmClangStdenv;
   };
 
   rocalution = callPackage ./rocalution {
-    inherit rocmUpdateScript rocm-cmake rocprim rocsparse rocrand rocblas clr;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocprim
+      rocsparse
+      rocrand
+      rocblas
+      clr
+      ;
     inherit (llvm) openmp;
     stdenv = llvm.rocmClangStdenv;
   };
@@ -227,12 +331,24 @@ in rec {
   };
 
   hipsolver = callPackage ./hipsolver {
-    inherit rocmUpdateScript rocm-cmake rocblas rocsolver clr;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocblas
+      rocsolver
+      clr
+      ;
     stdenv = llvm.rocmClangStdenv;
   };
 
   hipblas = callPackage ./hipblas {
-    inherit rocmUpdateScript rocm-cmake rocblas rocsolver clr;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocblas
+      rocsolver
+      clr
+      ;
     stdenv = llvm.rocmClangStdenv;
   };
 
@@ -256,7 +372,18 @@ in rec {
   };
 
   miopen = callPackage ./miopen {
-    inherit rocmUpdateScript rocm-cmake rocblas clang-ocl miopengemm composable_kernel rocm-comgr clr rocm-docs-core half;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocblas
+      clang-ocl
+      miopengemm
+      composable_kernel
+      rocm-comgr
+      clr
+      rocm-docs-core
+      half
+      ;
     inherit (llvm) clang-tools-extra;
     stdenv = llvm.rocmClangStdenv;
     rocmlir = rocmlir-rock;
@@ -272,14 +399,30 @@ in rec {
   };
 
   migraphx = callPackage ./migraphx {
-    inherit rocmUpdateScript rocm-cmake rocblas composable_kernel miopengemm miopen clr half rocm-device-libs;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocblas
+      composable_kernel
+      miopengemm
+      miopen
+      clr
+      half
+      rocm-device-libs
+      ;
     inherit (llvm) openmp clang-tools-extra;
     stdenv = llvm.rocmClangStdenv;
     rocmlir = rocmlir-rock;
   };
 
   rpp = callPackage ./rpp {
-    inherit rocmUpdateScript rocm-cmake rocm-docs-core clr half;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocm-docs-core
+      clr
+      half
+      ;
     inherit (llvm) openmp;
     stdenv = llvm.rocmClangStdenv;
   };
@@ -300,11 +443,22 @@ in rec {
   };
 
   mivisionx = callPackage ./mivisionx {
-    inherit rocmUpdateScript rocm-cmake rocm-device-libs clr rpp rocblas miopengemm miopen migraphx half rocm-docs-core;
+    inherit
+      rocmUpdateScript
+      rocm-cmake
+      rocm-device-libs
+      clr
+      rpp
+      rocblas
+      miopengemm
+      miopen
+      migraphx
+      half
+      rocm-docs-core
+      ;
     inherit (llvm) clang openmp;
     opencv = opencv.override { enablePython = true; };
     ffmpeg = ffmpeg_4;
-    rapidjson = rapidjson-unstable;
     stdenv = llvm.rocmClangStdenv;
 
     # Unfortunately, rocAL needs a custom libjpeg-turbo until further notice
@@ -318,6 +472,9 @@ in rec {
         rev = "640d7ee1917fcd3b6a5271aa6cf4576bccc7c5fb";
         sha256 = "sha256-T52whJ7nZi8jerJaZtYInC2YDN0QM+9tUDqiNr6IsNY=";
       };
+
+      # overwrite all patches, since patches for newer version do not apply
+      patches = [ ../6/0001-Compile-transupp.c-as-part-of-the-library.patch ];
     };
   };
 
