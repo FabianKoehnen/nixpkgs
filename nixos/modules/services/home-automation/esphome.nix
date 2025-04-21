@@ -54,7 +54,7 @@ in
     stateDir = mkOption {
       type = types.str;
       default = "/var/lib/esphome";
-      description = mdDoc "esphome stateDir";
+      description = "esphome stateDir";
     };
 
     openFirewall = mkOption {
