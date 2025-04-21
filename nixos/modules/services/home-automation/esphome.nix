@@ -107,6 +107,7 @@ in
         User = "esphome";
         Group = "esphome";
         WorkingDirectory = stateDir;
+        ReadWritePaths = [stateDir];
         StateDirectory = "esphome";
         StateDirectoryMode = "0750";
         Restart = "on-failure";
